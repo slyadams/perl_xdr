@@ -1,53 +1,54 @@
 package Types;
 
+use Types::Primitives;
+use Types::Array;
+use Types::Map;
+
 use strict;
 use warnings;
 
-use constant templates => {
-	"uint8"		=> 'N',
-	"int8"		=> 'l',
-
-	"uint16"	=> 'N',
-	"int16"		=> 'l',
-
-	"uint32"	=> 'N',
-	"int32"		=> 'l',
-
-	"uint64"	=> 'Q',
-	"int64"		=> 'q',
-
-	"float"		=> 'f>',
-	"double"	=> 'd>',
-
-	"bool"		=> 'N',
-	"string"	=> 'N/A*',
-	"bytes"		=> 'N/a*',
-
-#        return {
-#                'uint16' => 'n',
-#                'int16' => 'N!',
-#                'uint32' => 'N',
-#                'int32' => 'N!',
-#                'byte' => 'N/a*',
-#        };
-
-};
 
 sub encode {
 	my $class = shift;
-	my $type = shift;
-	my $value = shift;
-	if (!defined $value) {
-		print "Undef: $type\n";
-	}	
-	return pack(Types->templates->{$type}, $value);
+	my $attr = shift;
+	my $message = shift;
+	my $type = $attr->{isa};
+	if (Types::Primitives->can($type)) {
+		my $value = $attr->get_read_method_ref()->execute($message); 
+		return Types::Primitives->encode($type, $value);
+	} else {
+		use Data::Dumper;
+		my $constraint = $attr->type_constraint();
+		if ($constraint->parent()->name() eq "ArrayRef") {
+			my $array = $attr->get_read_method_ref()->execute($message) // [];
+			return Types::Array->encode($constraint->type_parameter()->name, $array);
+		} elsif ($constraint->name() eq "HashRef") {
+			my $hash = $attr->get_read_method_ref()->execute($message) // {};
+                	if ($attr->does('Mapped') && $attr->is_map()) {
+				my $key_types = $attr->key_types();
+				return Types::Map->encode($key_types->[0], $key_types->[1], $hash);
+			} else {
+				die "Unsuppored non-mapped hashref ".$a->name();
+			}
+		} else {
+			print "Unknown: ".$constraint->parent()->name()."\n";
+			return undef;
+		}
+		#print Dumper($attr->type_constraint()->parent());
+		#print Dumper($attr->type_constraint()->name);
+		#print Dumper($attr->type_constraint()->type_parameter()->name);
+	}
 }
 
 sub decode {
 	my $class = shift;
 	my $type = shift;
 	my $data = shift;
-	return unpack(Types->templates->{$type}, $data);
+	if (Types::Primitives->can($type)) {
+		return Types::Primitives->decode($type, $data);
+	} else {
+		return "";
+	}
 }
 
 1;

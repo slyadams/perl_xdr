@@ -4,11 +4,12 @@ use strict;
 use warnings;
 
 require Types;
+require Types::Primitives;
 
 sub _getTemplate {
 	my $class = shift;
 	my $type = shift;
-	return "N/(".Types->templates->{$type}.")*";
+	return "N/(".Types::Primitives->templates->{$type}.")*";
 }
 
 sub encode {

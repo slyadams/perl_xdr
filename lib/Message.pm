@@ -2,14 +2,16 @@ package Message;
 
 use Moose;
 use Types;
-use Types::Primitives;
+use Types::PrimitiveConstraints;
+use Traits::Mapped;
+use Data::Dumper;
 
 sub _get_ordered_attributes {
 	my $self = shift;
 	if (!defined $self->{_ordered_attributes}) {
 		$self->{_ordered_attributes} = $self->_build_ordered_attributes();
 	}
-	return $self->_build_ordered_attributes();
+	return $self->{_ordered_attributes};
 }
 
 sub _build_ordered_attributes {
@@ -37,9 +39,8 @@ sub _build_ordered_attributes {
 		}
 
 	};
-
 	my @attributes = ();
-	my @a = $self->meta()->get_all_attributes();
+	my @a = $meta->get_all_attributes();
 	foreach my $attr (sort $s @a) {
 		#print $attr->associated_class()->name()."::".$attr->name()."\n";
 		push(@attributes, $attr);
@@ -51,9 +52,7 @@ sub encode {
 	my $self = shift;
 	my $buffer = "";
 	foreach my $attr (@{$self->_get_ordered_attributes()}) {
-		my $value = $attr->get_read_method_ref()->execute($self);
-		#print $attr->associated_class()->name()."::".$attr->name()." (".$attr->{isa}.") = ".($value // "")."\n";
-		$buffer .= Types->encode($attr->{isa}, $value);
+		$buffer .= Types->encode($attr, $self);
 	}
 	return $buffer;
 }

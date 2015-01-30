@@ -1,61 +1,54 @@
-use Moose::Util::TypeConstraints;
+package Types::Primitives;
 
-subtype 'int',
-	as 'Int';
+use strict;
+use warnings;
 
-subtype 'int8',
-	as 'int',
-	where { $_ >= -(1 << 7) && $_ <= (2**7)-1 };
+use constant templates => {
+	"uint8"		=> 'N',
+	"int8"		=> 'N!',
 
-subtype 'int16',
-	as 'int',
-	where { $_ >= -(1 << 15) && $_ <= (2**15)-1 };
+	"uint16"	=> 'N',
+	"int16"		=> 'N!',
 
-subtype 'int32',
-	as 'int',
-	where { $_ >= -(1 << 31) && $_ <= (2**31)-1 };
+	"uint32"	=> 'N',
+	"int32"		=> 'N!',
 
-subtype 'int64',
-	as 'int',
-	where { $_ >= -(1 << 63) && $_ <= (2**63)-1 };
+	"uint64"	=> 'Q>',
+	"int64"		=> 'q>',
 
-subtype 'uint',
-	as 'Int',
-	where { $_ >= 0 };
+	"float"		=> 'f>',
+	"double"	=> 'd>',
 
-subtype 'uint8',
-	as 'uint',
-	where { $_ <= 2**8-1  };
+	"bool"		=> 'N',
+	"string"	=> 'N/A*',
+	"bytes"		=> 'N/a*',
 
-subtype 'uint16',
-	as 'uint',
-	where { $_ <= 2**16-1 };
+#                'byte' => 'N/a*',
+#        };
 
-subtype 'uint32',
-	as 'uint',
-	where { $_ <= 2**32-1  };
+};
 
-subtype 'uint64',
-	as 'uint',
-	where { $_ <= 2**64-1  };
+sub can {
+	my $class = shift;
+	my $type = shift;
+	return exists Types::Primitives->templates->{$type};
+}
 
-subtype 'float',
-	as 'Num';
+sub encode {
+	my $class = shift;
+	my $type = shift;
+	my $value = shift;
+	if (!defined $value) {
+		print "Undef: $type\n";
+	}	
+	return pack(Types::Primitives->templates->{$type}, $value);
+}
 
-subtype 'double',
-	as 'Num';
-
-subtype 'bool',
-	as 'uint',
-	where { $_ <= 1  };
-
-subtype 'string',
-	as 'string';
-
-subtype 'bytes',
-	as 'Value';
-
-
-no Moose::Util::TypeConstraints;
+sub decode {
+	my $class = shift;
+	my $type = shift;
+	my $data = shift;
+	return unpack(Types::Primitives->templates->{$type}, $data);
+}
 
 1;

@@ -3,7 +3,7 @@ package Types::Map;
 use strict;
 use warnings;
 
-require Types;
+require Types::Primitives;
 
 sub _getTemplate {
 	my $class = shift;
@@ -12,9 +12,9 @@ sub _getTemplate {
 	my $type = shift;
 
 	if ($type eq "encode") {
-		return "N (".Types->templates->{$key_type}." ".Types->templates->{$value_type}.")*";
+		return "N (".Types::Primitives->templates->{$key_type}." ".Types::Primitives->templates->{$value_type}.")*";
 	} else {
-		return "N/(".Types->templates->{$key_type}." ".Types->templates->{$value_type}.")*";
+		return "N/(".Types::Primitives->templates->{$key_type}." ".Types::Primitives->templates->{$value_type}.")*";
 	}
 }
 
