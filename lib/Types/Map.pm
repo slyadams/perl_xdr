@@ -9,9 +9,9 @@ sub _getTemplate {
 	my $class = shift;
 	my $key_type = shift;
 	my $value_type = shift;
-	my $type = shift;
+	my $mode = shift;
 
-	if ($type eq "encode") {
+	if ($mode eq "encode") {
 		return "N (".Types::Primitives->templates->{$key_type}." ".Types::Primitives->templates->{$value_type}.")*";
 	} else {
 		return "N/(".Types::Primitives->templates->{$key_type}." ".Types::Primitives->templates->{$value_type}.")*";

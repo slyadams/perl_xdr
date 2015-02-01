@@ -1,10 +1,11 @@
-package Message::Message2;
+package Message::MessageA2;
 
 use Moose;
 
-extends 'Message::Message1';
+extends 'Message::MessageA1';
 
-has '+type' => ( default => '1002');
+has '+type' =>    ( default => '4002');
+
 
 has 'int16' => (is => 'rw', isa => 'int16');
 has 'int32' => (is => 'rw', isa => 'int32');

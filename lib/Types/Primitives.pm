@@ -4,11 +4,9 @@ use strict;
 use warnings;
 
 use constant templates => {
-	"uint8"		=> 'N',
-	"int8"		=> 'N!',
 
-	"uint16"	=> 'N',
-	"int16"		=> 'N!',
+	"uint16"	=> 'n',
+	"int16"		=> 'n!',
 
 	"uint32"	=> 'N',
 	"int32"		=> 'N!',
@@ -24,7 +22,6 @@ use constant templates => {
 	"bytes"		=> 'N/a*',
 
 #                'byte' => 'N/a*',
-#        };
 
 };
 
@@ -48,7 +45,8 @@ sub decode {
 	my $class = shift;
 	my $type = shift;
 	my $data = shift;
-	return unpack(Types::Primitives->templates->{$type}, $data);
+	my $value;
+	return unpack(Types::Primitives->templates->{$type}." a*", $data);
 }
 
 1;
