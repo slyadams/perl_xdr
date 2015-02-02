@@ -6,12 +6,9 @@ use warnings;
 sub loadPlugin {
 	my $class = shift;
 	my $pluginName = shift;
-	my $plugin = undef;
-	eval qq^
-		use $pluginName;
-		\$plugin = new $pluginName();
-	^;
-	return $plugin;
+
+	Class::Load::load_class($pluginName);
+	return $pluginName->new();
 }
 
 # Convert a filename into a Perl module name
@@ -38,7 +35,9 @@ sub loadPlugins {
 			my $pluginName = $class->_getPluginName($pluginFileName);
 			my $plugin = $class->loadPlugin($pluginName);
 			if (defined $plugin) {
-				$plugins->{$plugin->type()} = $plugin;
+				eval {
+					$plugins->{$plugin->type()} = $plugin;
+				};
 			}
 		}
 		return $plugins;

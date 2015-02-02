@@ -31,13 +31,15 @@ $m1->uint32(123);
 $m1->uint64(0);
 
 $m2->_init();
+my $a = $m2->encode();
+Message->_load_messages();
 my $start = Utils::Time->get_time_usec();
 
 for (my $i=0; $i<$n; $i++) {
-	my $a = $m2->encode();
+	my $m = Message->decode($a);
 }
 
 my $end = Utils::Time->get_time_usec();
 
-print "Time: ".(($end-$start)/1000000)."s = ".($end-$start)/(1000*$n)."ms per encode\n";
+print "Time: ".(($end-$start)/1000000)."s = ".($end-$start)/(1000*$n)."ms per decode\n";
 

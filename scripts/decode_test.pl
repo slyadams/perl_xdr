@@ -9,7 +9,7 @@ require Message::Message2;
 require Message::Message3;
 require Message::Message4;
 require Message::Message5;
-require Utils::Hex;
+require Utils::Dumper;
 use Data::Dumper;
 
 my $m1 = new Message::Message1();
@@ -32,7 +32,7 @@ $m2->int64(6);
 
 $m1->_init();
 my $buffer = $m1->encode();
-print "Encoded:\n".Utils::Hex->dump($buffer)."\n";
+print "Encoded:\n".Utils::Dumper->hex($buffer)."\n";
 
 my $m = Message->decode($buffer);
-print $m->dump()."\n";
+print Utils::Dumper->message($m)."\n";

@@ -3,6 +3,7 @@ package Types;
 use Types::Primitives;
 use Types::Array;
 use Types::Map;
+use Loader;
 
 use strict;
 use warnings;
@@ -14,7 +15,7 @@ sub encode {
 	my $message = shift;
 	my $type = $attr->{isa};
 	if (Types::Primitives->can($type)) {
-		my $value = $attr->get_value($message); 
+		my $value = $attr->get_value($message);
 		return Types::Primitives->encode($type, $value);
 	} else {
 		use Data::Dumper;
@@ -30,6 +31,9 @@ sub encode {
 			} else {
 				die "Unsuppored non-mapped hashref ".$a->name();
 			}
+		} elsif ($constraint->parent()->name() eq "Object") {
+			my $obj = $attr->get_value($message);
+			return $obj->encode($message);
 		} else {
 			print "Unknown: ".$constraint->parent()->name()."\n";
 			return undef;
@@ -55,6 +59,16 @@ sub decode {
 			my ($value, $new_buffer) = Types::Array->decode($constraint->type_parameter()->name, $buffer);
 			$attr->set_value($message, $value);
 			return ($value, $new_buffer);
+		} elsif ($constraint->name() eq "HashRef") {
+			my $key_types = $attr->key_types();
+			my ($value, $new_buffer) = Types::Map->decode($key_types->[0], $key_types->[1], $buffer);
+			$attr->set_value($message, $value);
+			return ($value, $new_buffer);
+		} elsif ($constraint->parent()->name() eq "Object") {
+			my $obj = Loader->loadPlugin($type);
+			my $new_buffer = $obj->decode_message($buffer);
+			$attr->set_value($message, $obj);
+			return ($obj, $new_buffer);
 		}
 	}
 }

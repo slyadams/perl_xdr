@@ -6,7 +6,7 @@ use Data::Dumper;
 require Types;
 require Types::Array;
 require Types::Map;
-require Utils::Hex;
+require Utils::Dumper;
 
 my $hash = {
 	"a" => "simon",

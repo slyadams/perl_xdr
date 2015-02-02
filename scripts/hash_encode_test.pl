@@ -2,7 +2,7 @@
 
 use lib '../lib/';
 use Message::Message5;
-use Utils::Hex;
+use Utils::Dumper;
 use Data::Dumper;
 use strict;
 use warnings;
@@ -10,5 +10,5 @@ use warnings;
 my $m5 = new Message::Message5(map => { 7 => 5} );
 
 my $buffer = $m5->encode();
-print Utils::Hex->dump($buffer)."\n";
+print Utils::Dumper->hex($buffer)."\n";
 
