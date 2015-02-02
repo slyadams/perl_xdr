@@ -4,8 +4,8 @@ use Moose;
 
 extends 'Message';
 
-has 'version' => (is => 'ro', isa => 'uint16', default => '1');
-has 'type' =>    (is => 'ro', isa => 'uint16', default => '4001');
+has 'version' => (is => 'ro', isa => 'header_int', default => '1');
+has 'type' =>    (is => 'ro', isa => 'header_int', default => '4001');
 
 
 has 'uint16' => (is => 'rw', isa => 'uint16');

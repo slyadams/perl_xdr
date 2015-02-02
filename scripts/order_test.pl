@@ -57,10 +57,10 @@ my $ma = Message->decode($buffer1);
 print Utils::Dumper->message($ma)."\n";
 
 my $mb = Message->decode($buffer2);
-print Utils::Dumper->hex($mb)."\n";
+print Utils::Dumper->message($mb)."\n";
 
 my $mc = Message->decode($buffer3);
-print Utils::Dumper->hex($mc)."\n";
+print Utils::Dumper->message($mc)."\n";
 
 my $md = Message->decode($buffer4);
-print Utils::Dumper->hex($md)."\n";
+print Utils::Dumper->message($md)."\n";

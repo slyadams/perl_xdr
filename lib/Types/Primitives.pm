@@ -5,8 +5,10 @@ use warnings;
 
 use constant templates => {
 
-	"uint16"	=> 'n',
-	"int16"		=> 'n!',
+	"header_int"	=> "n",
+
+	"uint16"	=> 'N',
+	"int16"		=> 'N!',
 
 	"uint32"	=> 'N',
 	"int32"		=> 'N!',

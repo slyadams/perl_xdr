@@ -15,7 +15,7 @@ my $m1 = new Message::MessageB1();
 my $sa1 = new Message::Standalone1();
 my $sa2 = new Message::Standalone2();
 
-$m1->uint16_a(1);
+$m1->uint16_a(Message::MessageB1->ONE);
 $sa1->uint16_sa(2);
 $sa2->uint16_sb(7);
 $m1->uint16_b(3);

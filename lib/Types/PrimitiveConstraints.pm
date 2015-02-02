@@ -39,6 +39,9 @@ subtype 'uint64',
 	as 'uint',
 	where { $_ <= 2**64-1  };
 
+subtype 'header_int',
+	as 'uint16';
+
 subtype 'float',
 	as 'Num';
 

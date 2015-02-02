@@ -30,11 +30,11 @@ $m1->uint16(123);
 $m1->uint32(123);
 $m1->uint64(0);
 
-$m2->_init();
+$m3->_init();
 my $start = Utils::Time->get_time_usec();
 
 for (my $i=0; $i<$n; $i++) {
-	my $a = $m2->encode();
+	my $a = $m3->encode();
 }
 
 my $end = Utils::Time->get_time_usec();
