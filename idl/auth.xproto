@@ -1,0 +1,24 @@
+package iDirect.DirectoryService;
+
+enum Colors  {
+    RED = 0;
+    GREEN = 1;
+    BLUE = 2;
+}
+
+object Query {
+  option version = 0;
+  option type    = 2001;
+}
+
+object Query2 {
+  option version = 0;
+  option type    = 2001;
+  required string Site             = 1;
+
+}
+
+enum Numbers  {
+    ONE = 1;
+    TWO = 2;
+}
