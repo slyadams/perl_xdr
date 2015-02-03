@@ -3,16 +3,35 @@ package Generator::Code::Object;
 use strict;
 use warnings;
 
-sub generate_package {
+sub generate_package_name {
 	my $class = shift;
 	my $namespace = shift;
 	my $package = shift;
+	return "$namespace\_$package->{name}";
+}
 
-	return qq {
-package $namespace\_$package->{name};
 
+
+sub generate_package {
+	my $class = shift;
+	my $package_name = shift;
+	my $namespace = shift;
+	my $def = shift;
+	my $comment = shift;
+
+	my $comment_string = "";
+	foreach my $comment (@{$comment}) {
+		$comment_string .= "// $comment\n";
+	}
+
+	my $full_package_name = $class->generate_package_name($namespace, $def);
+
+	return qq {package $namespace\:\:$full_package_name;
+
+$comment_string
 use strict;
 use warnings;
+
 use Moose;
 
 extends 'Message';
@@ -21,20 +40,22 @@ extends 'Message';
 }
 
 sub generate {
-	my $self = shift;
-	my $info = shift;
+	my $class = shift;
+	my $object = shift;
 
-	my $field_string = "";
-	foreach my $f (@{$info->{content}}) {
-		$field_string .= "has '$f->{name}' => (is => 'ro', isa => '$f->{data_type}',";
-		if ($f->{type} eq "option") {
-			$field_string .= " default => '$f->{value},";
-		} elsif ($f->{type} eq "required") {
+	my $field_string = ""; 
+	foreach my $field (@{$object->{content}}) {
+                $field_string .= length($field->{comment}) > 0 ? "// $field->{comment}\n" : "";
+		$field_string .= "has '$field->{name}' => (is => 'ro', isa => '$field->{data_type}',";
+		if ($field->{type} eq "option") {
+			$field_string .= " default => '$field->{value},";
+		} elsif ($field->{type} eq "required") {
 			
 		}
 		chop($field_string);
 		$field_string .= ");\n";
 	}
+	print $field_string;
 	return $field_string;
 }
 

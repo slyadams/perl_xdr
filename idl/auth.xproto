@@ -1,20 +1,34 @@
+// this is some pre-emptive commenting
+// so is this
+
+////////////////////
+// this is a new one
+
 package iDirect.DirectoryService;
 
-enum Colors  {
-    RED = 0;
+//early comment 1
+//early comment 2
+
+
+enum Colors  { // my colours
+    RED = 0; // hello
     GREEN = 1;
+    // what does on here?
     BLUE = 2;
 }
 
-object Query {
-  option version = 0;
-  option type    = 2001;
+// mid comment1
+// mid comment2
+
+object Query { // a query
+  option version = 0; // my my
+  option type    = 2001; // abc
 }
 
 object Query2 {
-  option version = 0;
+  option version = 0; // first
   option type    = 2001;
-  required string Site             = 1;
+  required string Site             = 1;  // its required!
 
 }
 
