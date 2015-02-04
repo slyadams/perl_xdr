@@ -48,9 +48,9 @@ sub generate {
 	my $field_string = ""; 
 	foreach my $field (@{$object->{content}}) {
                 $field_string .= length($field->{comment}) > 0 ? "// $field->{comment}\n" : "";
-		$field_string .= "has '$field->{name}' => (is => 'ro', isa => '$field->{data_type}',";
+		$field_string .= "has '$field->{name}' => (is => 'rw', isa => '$field->{data_type}',";
 		if ($field->{type} eq "option") {
-			$field_string .= " default => '$field->{value},";
+			$field_string .= " default => '$field->{value}',";
 		} elsif ($field->{type} eq "required") {
 			
 		}

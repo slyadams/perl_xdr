@@ -5,7 +5,7 @@ use warnings;
 
 require Types::Primitives;
 
-sub _getTemplate {
+sub get_template {
 	my $class = shift;
 	my $key_type = shift;
 	my $value_type = shift;
@@ -28,7 +28,7 @@ sub encode {
 		die "Cannot use a non-primitive as a map key";
 	} elsif (Types::Primitives->can($key_type) && Types::Primitives->can($value_type)) {
 		# Simplest type of encode
-		return pack($self->_getTemplate($key_type, $value_type, "encode"), (scalar keys (%$hash)), %$hash);
+		return pack($self->get_template($key_type, $value_type, "encode"), (scalar keys (%$hash)), %$hash);
 	} else {
 		# encode length, then values
 		my $template = Types::Primitives->templates->{$key_type}." a*";
@@ -45,13 +45,13 @@ sub decode {
 	my $key_type = shift;
 	my $value_type = shift;
 	my $buffer = shift;
-
+	my $fast = shift;
 
 	if (!Types::Primitives->can($key_type)) {
 		die "Cannot use a non-primitive as a map key";
 	} elsif (Types::Primitives->can($key_type) && Types::Primitives->can($value_type)) {
 		# Simplest type of decode
-		my @array = unpack($class->_getTemplate($key_type, $value_type, "decode"), $buffer);
+		my @array = unpack($class->get_template($key_type, $value_type, "decode"), $buffer);
 		my $new_buffer = pop @array;
 		my %value = @array;
         	return (\%value, $new_buffer);
@@ -62,13 +62,20 @@ sub decode {
 		my $key;
 		my $template = Types::Primitives->templates->{$key_type}." a*";
 		for (my $i=0; $i<$n; $i++) {
-			my $obj = Loader->loadPlugin($value_type);
 			($key, $new_buffer) = unpack($template, $new_buffer);
-			$new_buffer = $obj->decode_message($new_buffer);
-			$hash->{$key} = $obj;
+			my $obj;
+			if ($fast) {
+				$obj = Message->get_message_by_name($value_type);
+				my $sub_result = {};
+				$new_buffer = $obj->decode_message_fast($new_buffer, $sub_result);
+				$hash->{$key} = $sub_result;
+			} else {
+				$obj = Loader->loadPlugin($value_type);
+				$new_buffer = $obj->decode_message($new_buffer);
+				$hash->{$key} = $obj;
+			}
 		}
 		return ($hash, $new_buffer);
-
 	}
 }
 

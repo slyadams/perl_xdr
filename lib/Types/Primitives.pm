@@ -23,14 +23,20 @@ use constant templates => {
 	"string"	=> 'N/A*',
 	"bytes"		=> 'N/a*',
 
-#                'byte' => 'N/a*',
-
 };
+
+sub get_template {
+	my $self = shift;
+	my $type = shift;
+
+	return Types::Primitives->templates->{$type};
+}
 
 sub can {
 	my $class = shift;
 	my $type = shift;
-	return exists Types::Primitives->templates->{$type};
+
+	return defined $class->get_template($type);
 }
 
 sub encode {

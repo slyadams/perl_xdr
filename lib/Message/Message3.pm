@@ -8,4 +8,6 @@ has '+type' => (default => '1003');
 
 has 'bool' => (is => 'rw', isa => 'bool');
 
+__PACKAGE__->meta->make_immutable();
+
 1;

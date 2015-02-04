@@ -8,7 +8,6 @@ use Loader;
 use strict;
 use warnings;
 
-
 sub encode {
 	my $class = shift;
 	my $attr = shift;
@@ -18,7 +17,6 @@ sub encode {
 		my $value = $attr->get_value($message);
 		return Types::Primitives->encode($type, $value);
 	} else {
-		use Data::Dumper;
 		my $constraint = $attr->type_constraint();
 		if ($constraint->parent()->name() eq "ArrayRef") {
 			my $array = $attr->get_value($message) // [];
@@ -46,29 +44,49 @@ sub decode {
 	my $attr = shift;
 	my $message = shift;
 	my $buffer = shift;
+	my $result = shift;
+
 	my $type = $attr->{isa};
 	if (Types::Primitives->can($type)) {
 		my ($value, $new_buffer) = Types::Primitives->decode($type, $buffer);
-		#$attr->get_write_method_ref()->execute($message, $value);
-		$attr->set_value($message, $value);
+		if ($result) {
+			$result->{$attr->name()} = $value;
+		} else {
+			$attr->set_value($message, $value);
+		}
 		return ($value, $new_buffer);
 	} else {
-		use Data::Dumper;
 		my $constraint = $attr->type_constraint();
 		if ($constraint->parent()->name() eq "ArrayRef") {
-			my ($value, $new_buffer) = Types::Array->decode($constraint->type_parameter()->name, $buffer);
-			$attr->set_value($message, $value);
+			my ($value, $new_buffer) = Types::Array->decode($constraint->type_parameter()->name, $buffer, defined $result);
+			if ($result) {
+				$result->{$attr->name()} = $value;
+			} else {
+				$attr->set_value($message, $value);
+			}
 			return ($value, $new_buffer);
 		} elsif ($constraint->name() eq "HashRef") {
 			my $key_types = $attr->key_types();
-			my ($value, $new_buffer) = Types::Map->decode($key_types->[0], $key_types->[1], $buffer);
-			$attr->set_value($message, $value);
+			my ($value, $new_buffer) = Types::Map->decode($key_types->[0], $key_types->[1], $buffer, defined $result);
+			if ($result) {
+				$result->{$attr->name()} = $value;
+			} else {
+				$attr->set_value($message, $value);
+			}
 			return ($value, $new_buffer);
 		} elsif ($constraint->parent()->name() eq "Object") {
-			my $obj = Loader->loadPlugin($type);
-			my $new_buffer = $obj->decode_message($buffer);
-			$attr->set_value($message, $obj);
-			return ($obj, $new_buffer);
+			if ($result) {
+				my $obj = Message->get_message_by_name($type);
+				my $sub_result = {};
+				my $new_buffer = $obj->decode_message_fast($buffer, $sub_result);
+				$result->{$attr->name()} = $sub_result;
+				return ($sub_result, $new_buffer);
+			} else {
+				my $obj = Loader->loadPlugin($type);
+				my $new_buffer = $obj->decode_message($buffer);
+				$attr->set_value($message, $obj);
+				return ($obj, $new_buffer);
+			}
 		}
 	}
 }

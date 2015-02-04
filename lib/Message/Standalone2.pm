@@ -4,7 +4,9 @@ use Moose;
 
 extends 'Message';
 
-has 'uint16_sb' => (is => 'rw', isa => 'uint16');
-has 'uint16_sb2' => (is => 'rw', isa => 'uint16');
+has 'sa2_uint16_1' => (is => 'rw', isa => 'uint16');
+has 'sa2_uint16_2' => (is => 'rw', isa => 'uint16');
+
+__PACKAGE__->meta->make_immutable();
 
 1;

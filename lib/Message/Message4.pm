@@ -12,4 +12,6 @@ has 'uint64' => (is => 'rw', isa => 'uint64');
 has 'uint32s' => (is => 'rw', isa => 'ArrayRef[uint32]');
 has 'strings' => (is => 'rw', isa => 'ArrayRef[string]');
 
+__PACKAGE__->meta->make_immutable();
+
 1;

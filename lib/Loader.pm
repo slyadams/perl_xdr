@@ -36,7 +36,8 @@ sub loadPlugins {
 			my $plugin = $class->loadPlugin($pluginName);
 			if (defined $plugin) {
 				eval {
-					$plugins->{$plugin->type()} = $plugin;
+					$plugins->{name}->{$pluginName} = $plugin;
+					$plugins->{id}->{$plugin->type()} = $plugin;
 				};
 			}
 		}

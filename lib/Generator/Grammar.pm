@@ -37,7 +37,7 @@ sub get_grammar {
 			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], comment => (exists $item[8][0] ? $item[8][0] : "") };
 		}
 		RepeatedLine: 'repeated' Type Name '=' Value Option(?) ';' Comment(?) {
-			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], repeated => 1, comment => $item[8] };
+			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], repeated => 1, comment => (exists $item[8][0] ? $item[8][0] : "") };
 		}
 		OptionalLine: 'optional' Type Name '=' Value Option(?) ';' Comment(?)  {
 			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], optional => 1, comment => $item[8] }

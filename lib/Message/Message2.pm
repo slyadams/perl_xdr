@@ -10,4 +10,6 @@ has 'int16' => (is => 'rw', isa => 'int16');
 has 'int32' => (is => 'rw', isa => 'int32');
 has 'int64' => (is => 'rw', isa => 'int64');
 
+__PACKAGE__->meta->make_immutable();
+
 1;

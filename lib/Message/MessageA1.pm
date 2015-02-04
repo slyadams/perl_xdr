@@ -12,4 +12,6 @@ has 'uint16' => (is => 'rw', isa => 'uint16');
 has 'uint32' => (is => 'rw', isa => 'uint32');
 has 'uint64' => (is => 'rw', isa => 'uint64');
 
+__PACKAGE__->meta->make_immutable();
+
 1;

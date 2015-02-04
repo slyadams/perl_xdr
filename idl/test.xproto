@@ -21,18 +21,19 @@ enum Colors  { // my colours
 // mid comment2
 
 object Query { // a query
-  option version = 0; // my my
-  option type    = 2001; // abc
+  option a = 0; // my my
+  option b = 2001; // abc
 }
 
 object Query2 {
-  option version = 0; // first
-  option type    = 2001;
-  required string Site             = 1;  // its required!
-
+  option a = 0; 				// simple meta header option
+  required uint32 b	   = 1;  		// simple require
+  repeated string c = 7; 			// simple array
 }
 
 enum Numbers  {
     ONE = 1;
     TWO = 2;
 }
+
+//  repeated uint32 d = 6 [key = "string"];	// simple hash

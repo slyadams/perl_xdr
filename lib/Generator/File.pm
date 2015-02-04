@@ -8,9 +8,6 @@ use File::Slurp;
 sub _strip_comments {
 	my $class = shift;
 	my $file = shift;
-
-#	$file =~ s/[#;].*$//s;
-#	print $file;
 	return $file;
 }
 

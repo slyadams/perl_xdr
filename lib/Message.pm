@@ -8,14 +8,43 @@ use Loader;
 use Data::Dumper;
 
 my $messages = undef;
+my $ordered_attributes = {};
 my $inited = 0;
+
+sub _init {
+	my $self = shift;
+	if (!$inited) {
+		$inited = 1;
+		$self->_get_ordered_attributes();
+		$self->_load_messages();
+	}
+}
+
+sub get_message_by_name {
+	my $class = shift;
+	my $package_name = shift;
+	return $messages->{name}->{$package_name};
+}
+
+sub get_message_by_id {
+	my $class = shift;
+	my $id = shift;
+	return $messages->{id}->{$id};
+}
+
+sub BUILD {
+	my $self = shift;
+	$self->_init();
+}
 
 sub _get_ordered_attributes {
 	my $self = shift;
-	if (!defined $self->{_ordered_attributes}) {
-		$self->{_ordered_attributes} = $self->_build_ordered_attributes();
+	my $ref = ref($self);
+
+	if (!defined $ordered_attributes->{$ref}) {
+		$ordered_attributes->{$ref} = $self->_build_ordered_attributes();
 	}
-	return $self->{_ordered_attributes};
+	return $ordered_attributes->{$ref};
 }
 
 sub _build_ordered_attributes {
@@ -59,7 +88,6 @@ sub _build_ordered_attributes {
 	my @attributes = ();
 	my @a = $meta->get_all_attributes();
 	foreach my $attr (sort $s @a) {
-		#print $attr->associated_class()->name()."::".$attr->name()."\n";
 		push(@attributes, $attr);
 	}
 	return \@attributes;
@@ -73,25 +101,10 @@ sub _load_messages {
 	return $messages;
 }
 
-sub _init {
-	my $self = shift;
-	if (!$inited) {
-		$inited = 1;
-		$self->_get_ordered_attributes();
-		$self->_load_messages();
-	}
-}
-
-sub BUILD {
-	my $self = shift;
-	$self->_init();
-}
-
 sub encode {
 	my $self = shift;
 	my $buffer = "";
 	foreach my $attr (@{$self->_get_ordered_attributes()}) {
-		#print "Encoding $self: ".$attr->name()."\n";
 		$buffer .= Types->encode($attr, $self);
 	}
 	return $buffer;
@@ -105,6 +118,19 @@ sub _get_message_meta {
 	return { version => $version, type => $type};
 }
 
+sub decode_message_fast {
+	my $self = shift;
+	my $buffer = shift;
+	my $result = shift;
+
+	# decode entire message with appropriate type
+	foreach my $attr (@{$self->_get_ordered_attributes()}) {
+		my $value;
+		($value, $buffer) = Types->decode($attr, $self, $buffer, $result);
+	}
+	return $buffer;
+}
+
 sub decode_message {
 	my $self = shift;
 	my $buffer = shift;
@@ -112,7 +138,6 @@ sub decode_message {
 	# decode entire message with appropriate type
 	foreach my $attr (@{$self->_get_ordered_attributes()}) {
 		my $value;
-#		print "Decoding $self: ".$attr->name()."\n";
 		($value, $buffer) = Types->decode($attr, $self, $buffer);
 	}
 	return $buffer;
@@ -121,15 +146,23 @@ sub decode_message {
 sub decode {
 	my $class = shift;
 	my $buffer = shift;
+	my $fast = shift;
 
 	# decode first two fields to get type
 	my $message_meta = $class->_get_message_meta($buffer);
 	my $messages = $class->_load_messages();
-	my $message = $messages->{$message_meta->{type}};
-
-	my $remaining_buffer = $message->decode_message($buffer);
-	return $message;
+	if ($fast) {
+		my $result = {};
+		my $message = Message->get_message_by_id($message_meta->{type});
+		my $remaing_buffer = $message->decode_message_fast($buffer, $result);
+		return $result;
+	} else {
+		my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
+		my $remaining_buffer = $message->decode_message($buffer);
+		return $message;
+	}
 }
 
+__PACKAGE__->meta->make_immutable();
 
 1;
