@@ -40,12 +40,12 @@ sub message {
 		} elsif ($type eq "ARRAY") {
 			$text_value = "[".join(",", @{$value})."]";
 		} elsif ($type eq "HASH") {
-			$text_value = "{";
+			$text_value = "{ ";
 			for my $key (keys %{$value}) {
 				$text_value .= " $key => $value->{$key},"; 
 			}
 			chop($text_value);
-			$text_value .= "}";
+			$text_value .= "  }";
 		} elsif (blessed($value)) {
 			$text_value = "\n".$class->message($value, $indent, 0);
 			chomp($text_value);
@@ -55,50 +55,5 @@ sub message {
 	}
 	return $text;
 }
-
-sub encode {
-	my $self = shift;
-	my $buffer = "";
-	foreach my $attr (@{$self->_get_ordered_attributes()}) {
-		#print "Encoding $self: ".$attr->name()."\n";
-		$buffer .= Types->encode($attr, $self);
-	}
-	return $buffer;
-}
-
-sub _get_message_meta {
-	my $class = shift;
-	my $buffer = shift;
-
-	my ($version, $type) = unpack("n n", $buffer);
-	return { version => $version, type => $type};
-}
-
-sub decode_message {
-	my $self = shift;
-	my $buffer = shift;
-	
-	# decode entire message with appropriate type
-	foreach my $attr (@{$self->_get_ordered_attributes()}) {
-		my $value;
-#		print "Decoding $self: ".$attr->name()."\n";
-		($value, $buffer) = Types->decode($attr, $self, $buffer);
-	}
-	return $buffer;
-}
-
-sub decode {
-	my $class = shift;
-	my $buffer = shift;
-
-	# decode first two fields to get type
-	my $message_meta = $class->_get_message_meta($buffer);
-	my $messages = $class->_load_messages();
-	my $message = $messages->{$message_meta->{type}};
-
-	my $remaining_buffer = $message->decode_message($buffer);
-	return $message;
-}
-
 
 1;

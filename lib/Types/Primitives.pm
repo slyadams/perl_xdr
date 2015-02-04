@@ -37,8 +37,8 @@ sub encode {
 	my $class = shift;
 	my $type = shift;
 	my $value = shift;
-	if (!defined $value) {
-		print "Undef: $type\n";
+	if (!$class->can($type)) {
+		print "Undef: '$type'\n";
 	}	
 	return pack(Types::Primitives->templates->{$type}, $value);
 }

@@ -16,6 +16,7 @@ has 'type' =>    (is => 'ro', isa => 'header_int', default => '5001');
 
 has 'uint16_a' => (is => 'rw', isa => 'uint16');
 has 'obj1' => (is => 'rw', isa => 'Message::Standalone1');
+has 'obj2_h' => (is => 'rw', isa => 'HashRef', traits => ["Mapped"], key_types => ["uint32", "Message::Standalone2"] );
 has 'uint16_b' => (is => 'rw', isa => 'uint16');
 
 1;

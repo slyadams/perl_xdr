@@ -3,6 +3,8 @@ package Generator::Code::Enum;
 use strict;
 use warnings;
 
+use base 'Generator::Code';
+
 sub generate_package_name {
 	my $class = shift;
 	my $namespace = shift;

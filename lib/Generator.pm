@@ -65,7 +65,6 @@ sub generate {
 		foreach my $def (@{$objects}) {
 			my $object_string = Generator::Code::Object->generate_package($package_name, $namespace, $def, $def->{comment});
 			$object_string .= Generator::Code::Object->generate($def)."\n";
-			$object_string .= "1;";
 			$output_files->{Generator::Code::Object->generate_package_name($package_name, $def)} = $object_string;
 		}
 	}

@@ -3,6 +3,8 @@ package Generator::Code::Object;
 use strict;
 use warnings;
 
+use base 'Generator::Code';
+
 sub generate_package_name {
 	my $class = shift;
 	my $namespace = shift;
@@ -55,7 +57,7 @@ sub generate {
 		chop($field_string);
 		$field_string .= ");\n";
 	}
-	print $field_string;
+	$field_string .= "\n".$class->generate_footer();
 	return $field_string;
 }
 
