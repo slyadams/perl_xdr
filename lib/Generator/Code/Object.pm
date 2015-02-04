@@ -36,8 +36,6 @@ use warnings;
 
 use Moose;
 
-extends 'Message';
-
 };
 }
 
@@ -45,20 +43,30 @@ sub generate {
 	my $class = shift;
 	my $object = shift;
 
+	my $extends_string = "";
 	my $field_string = ""; 
 	foreach my $field (@{$object->{content}}) {
-                $field_string .= length($field->{comment}) > 0 ? "// $field->{comment}\n" : "";
-		$field_string .= "has '$field->{name}' => (is => 'rw', isa => '$field->{data_type}',";
-		if ($field->{type} eq "option") {
-			$field_string .= " default => '$field->{value}',";
-		} elsif ($field->{type} eq "required") {
-			
+		if (($field->{type} eq "option") && ($field->{name} eq "extends")) {
+			$extends_string = "extends '$field->{value}';\n";
+		} else {
+
+	                $field_string .= length($field->{comment}) > 0 ? "// $field->{comment}\n" : "";
+
+			my $data_type = $field->{data_type};
+			if ($field->{repeated}) {
+				$data_type = "ArrayRef[$data_type]";
+			}
+
+			$field_string .= "has '$field->{name}' => (is => 'rw', isa => '$data_type',";
+			if ($field->{type} eq "option") {
+				$field_string .= " default => '$field->{value}',";
+			}
+			chop($field_string);
+			$field_string .= ");\n";
 		}
-		chop($field_string);
-		$field_string .= ");\n";
 	}
 	$field_string .= "\n".$class->generate_footer();
-	return $field_string;
+	return $extends_string.$field_string;
 }
 
 1;

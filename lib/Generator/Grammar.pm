@@ -26,7 +26,7 @@ sub get_grammar {
 		Enum: 'enum' ObjectName '{' Commentline(?) EnumLine(s?) /};?/ /;?/ {
 			$return = { type => "enum", name => $item[2], comment => $item[4], content => $item[5] };
 		}
-		EnumLine: Name '=' Value Option(?)';' Commentline(?) {
+		EnumLine: Name '=' Value Option(?) ';' Commentline(?) {
 			$return = { name => $item{Name}, value => $item{Value}, comment => (exists $item[6][0] ? $item[6][0] : "") };
 		}
 		ObjectLine: OptionLine | RequiredLine | RepeatedLine | OptionalLine | Comment
@@ -34,16 +34,16 @@ sub get_grammar {
 			$return = { type => 'option', name => $item{Name}, value => $item{Value}, data_type => "uint16", comment => (exists $item[6][0] ? $item[6][0] : "") };
 		}
 		RequiredLine: 'required' Type Name '=' Value Option(?) ';' Comment(?) {
-			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], comment => (exists $item[8][0] ? $item[8][0] : "") };
+			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options =>(ref($item[6][0]) ? $item[6][0] : {}), comment => (exists $item[8][0] ? $item[8][0] : "") };
 		}
 		RepeatedLine: 'repeated' Type Name '=' Value Option(?) ';' Comment(?) {
-			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], repeated => 1, comment => (exists $item[8][0] ? $item[8][0] : "") };
+			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => (ref($item[6][0]) ? $item[6][0] : {}), repeated => 1, comment => (exists $item[8][0] ? $item[8][0] : "") };
 		}
 		OptionalLine: 'optional' Type Name '=' Value Option(?) ';' Comment(?)  {
-			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => $item[6], optional => 1, comment => $item[8] }
+			$return = { type => 'required', data_type => $item{Type}, name => $item{Name}, value => $item{Value}, options => (ref($item[6][0]) ? $item[6][0] : {}), optional => 1, comment => $item[8] }
 		}
 		Option: '[' Name '=' OptionValue ']' {
-			$return = { option => $item[2], value => $item[4] }
+			$return = { $item{Name} => $item{OptionValue} }
 		}
 		Name: /\w+/
 		Value: /\"?([\w\.]*)\"?/ {
@@ -64,6 +64,5 @@ sub get_grammar {
 		}
 	};
 }
-#$return =  { type => "comment", comment => (defined $item[1] ?  join("\n", @{$item[1]}) : undef )};
 
 1;

@@ -12,7 +12,7 @@ require Message::Standalone2;
 require Utils::Dumper;
 use Data::Dumper;
 
-my $n=1000;
+my $n=10000;
 
 my $b1 = new Message::MessageB1();
 my $sa1 = new Message::Standalone1();
