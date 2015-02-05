@@ -146,21 +146,33 @@ sub decode_message {
 sub decode {
 	my $class = shift;
 	my $buffer = shift;
-	my $fast = shift;
+#	my $fast = shift;
 
 	# decode first two fields to get type
 	my $message_meta = $class->_get_message_meta($buffer);
 	my $messages = $class->_load_messages();
-	if ($fast) {
-		my $result = {};
-		my $message = Message->get_message_by_id($message_meta->{type});
-		my $remaing_buffer = $message->decode_message_fast($buffer, $result);
-		return $result;
-	} else {
+#	if ($fast) {
+#		my $result = {};
+#		my $message = Message->get_message_by_id($message_meta->{type});
+#		my $remaing_buffer = $message->decode_message_fast($buffer, $result);
+#		return $result;
+#	} else {
 		my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
 		my $remaining_buffer = $message->decode_message($buffer);
 		return $message;
-	}
+#	}
+}
+
+sub decode_raw {
+	my $class = shift;
+	my $buffer = shift;
+
+	my $result = {};
+	my $message_meta = $class->_get_message_meta($buffer);
+	my $messages = $class->_load_messages();
+	my $message = Message->get_message_by_id($message_meta->{type});
+	my $remaing_buffer = $message->decode_message_fast($buffer, $result);
+	return $result;
 }
 
 __PACKAGE__->meta->make_immutable();

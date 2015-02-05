@@ -47,7 +47,7 @@ sub generate {
 	my $package_name = $data->{package};
 	$package_name =~ s/\./_/ig;
 
-	print Dumper($data);
+#	print Dumper($data);
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);
 	if (scalar @{$enums} > 0) {

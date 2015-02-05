@@ -22,11 +22,11 @@ sub get_template {
 }
 
 sub encode {
-	my $self = shift;
+	my $class = shift;
 	my $type = shift;
 	my $array = shift;
 	if (Types::Primitives->can($type)) {
-		return pack($self->get_template($type, "encode"), @{$array});
+		return pack($class->get_template($type, "encode"), @{$array});
 	} else {
 		my $buffer = pack("N", scalar @{$array});
 		foreach my $a (@{$array}) {

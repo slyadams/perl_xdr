@@ -9,7 +9,7 @@ require Message::Message3;
 my $m1 = new Message::Message1();
 my $m2 = new Message::Message2();
 my $m3 = new Message::Message3();
-my $n=10000;
+my $n=$ARV[0] // 10000;
 
 $m3->uint16(123);
 $m3->uint32(123);
@@ -30,7 +30,6 @@ $m1->uint16(123);
 $m1->uint32(123);
 $m1->uint64(0);
 
-$m3->_init();
 my $start = Utils::Time->get_time_usec();
 
 for (my $i=0; $i<$n; $i++) {

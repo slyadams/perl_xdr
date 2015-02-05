@@ -29,7 +29,7 @@ object Query2 {
   option a = 0; 				// simple meta header option
   required uint32 b	   = 1;  		// simple require
   repeated uint32 c = 7; 			// simple array
-repeated uint16 d=7[key="string"];// simple hash
+  repeated uint16 d=7[key="string"];		
 }
 
 object Query3 {

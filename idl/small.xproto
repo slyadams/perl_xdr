@@ -1,0 +1,6 @@
+package test.a;
+
+object Query2 {
+  required string e			    = 2 [default = "def1"];	
+  required string e			    = 2 [default = 123];	
+}

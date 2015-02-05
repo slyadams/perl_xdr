@@ -12,7 +12,7 @@ require Message::Standalone2;
 require Utils::Dumper;
 use Data::Dumper;
 
-my $n=10000;
+my $n=$ARGV[0] // 10000;
 
 my $b1 = new Message::MessageB1();
 my $sa1 = new Message::Standalone1();
@@ -35,11 +35,16 @@ $b1->b_obj_sa2_h({3=>$sa2, 4=>$sa2});
 
 my $buffer1 = $b1->encode();
 
-my $mode = $ARGV[0] // 1;
+my $mode = $ARGV[1] // 1;
 my $start = Utils::Time->get_time_usec();
 
+
 for (my $i=0; $i<$n; $i++) {
-	my $ma = Message->decode($buffer1, $mode);
+	if ($mode == 1) {	
+		Message->decode_raw($buffer1);
+	} else {
+		Message->decode($buffer1);
+	}
 }
 
 my $end = Utils::Time->get_time_usec();

@@ -3,10 +3,6 @@ use Moose::Util::TypeConstraints;
 subtype 'int',
 	as 'Int';
 
-subtype 'int8',
-	as 'int',
-	where { $_ >= -(1 << 7) && $_ <= (2**7)-1 };
-
 subtype 'int16',
 	as 'int',
 	where { $_ >= -(1 << 15) && $_ <= (2**15)-1 };
@@ -22,10 +18,6 @@ subtype 'int64',
 subtype 'uint',
 	as 'Int',
 	where { $_ >= 0 };
-
-subtype 'uint8',
-	as 'uint',
-	where { $_ <= 2**8-1  };
 
 subtype 'uint16',
 	as 'uint',
