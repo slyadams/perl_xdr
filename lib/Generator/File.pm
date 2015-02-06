@@ -22,6 +22,13 @@ sub write_file {
 	my $class = shift;
 	my $file_name = shift;
 	my $file_content = shift;
+
+#	use Data::Dumper;
+#	my @dirs = split('::', $file_name);
+#	$file_name = pop @dirs;
+#	print "File = $file_name";
+#	print Dumper(\@dirs);
+#die "stop";
 	return File::Slurp::write_file($file_name, $file_content);
 }
 

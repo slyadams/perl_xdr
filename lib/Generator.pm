@@ -10,6 +10,18 @@ use Generator::Code::Enum;
 use Generator::Code::Object;
 use Data::Dumper;
 
+sub get_name_summary {
+	my $class = shift;
+	my $config = shift;
+	my $new_config = {};
+	foreach my $def (@{$config->{definitions}}) {
+		if ($def->{type} eq "enum" || $def->{type} eq "object") {
+			$new_config->{$def->{type}}->{$def->{name}} = 1;
+		}
+	}
+	return $new_config;
+}
+
 sub generate {
 	my $class = shift;
 	my $idl_file = shift;
@@ -28,10 +40,7 @@ sub generate {
 	my $parser = Generator::Parser->get_parser();
 	my $file = Generator::File->read_file($idl_file);
 	my $output_files = {};
-	$::RD_HINT   = 1;
-	$::RD_WARN   = 1;
-	$::RD_ERRORS = 1;
-	#$::RD_TRACE  = 1;
+#	$::RD_TRACE  = 1;
 
 
 	$file =~ s/{/ {/gm;
@@ -45,27 +54,28 @@ sub generate {
 	
 	chop($data->{package});
 	my $package_name = $data->{package};
-	$package_name =~ s/\./_/ig;
 
 #	print Dumper($data);
+
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);
 	if (scalar @{$enums} > 0) {
-		my $enum_string = Generator::Code::Enum->generate_package($package_name, $namespace);
+		my $enum_string = Generator::Code::Enum->generate_package($namespace, $package_name);
 		foreach my $enum (@{$enums}) {
 			$enum_string .= Generator::Code::Enum->generate($enum)."\n\n";
 		}
 		$enum_string .= "1;";
-		$output_files->{Generator::Code::Enum->generate_package_name($package_name)} = $enum_string;
+		$output_files->{Generator::Code::Enum->generate_package_name(undef, $package_name)} = $enum_string;
 	}
-
 	# Produce object files
 	my $objects = Generator::Parser->get_objects($data);
+	my $names = Generator::Parser->get_name_summary($data);
+
 	if (scalar @{$objects} > 0) {
 		foreach my $def (@{$objects}) {
 			my $object_string = Generator::Code::Object->generate_package($package_name, $namespace, $def, $def->{comment});
-			$object_string .= Generator::Code::Object->generate($def)."\n";
-			$output_files->{Generator::Code::Object->generate_package_name($package_name, $def)} = $object_string;
+			$object_string .= Generator::Code::Object->generate($def, $names)."\n";
+			$output_files->{Generator::Code::Object->generate_package_name(undef, $package_name, $def->{name})} = $object_string;
 		}
 	}
 

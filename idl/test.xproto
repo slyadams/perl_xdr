@@ -23,20 +23,25 @@ enum Colors  { // my colours
 object Query { // a query
   option a = 0; // my my
   option b = 2001; // abc
+  required Colors color = 3;
 }
 
 object Query2 {
   option a = 0; 				// simple meta header option
   required uint32 b	   = 1;  		// simple require
   repeated uint32 c = 7; 			// simple array
-  repeated uint16 d=7[key="string"];		
+  repeated uint16 d = 7	 [key="string"];		
 }
 
 object Query3 {
   option extends                            = "Query2";
   required string e			    = 2 [default = "def1"];	
-  optional string f			    = 2 [default = "def2"];	
+  optional string f			    = 3 [default = "def2"];	
+  required Query g		= 4;
+  repeated Query h		= 5;
+  repeated Query find		= 6 [key="uint32"];
 }
+ 
 
 enum Numbers  {
     ONE = 1;

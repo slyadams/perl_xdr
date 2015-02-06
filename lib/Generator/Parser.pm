@@ -31,4 +31,16 @@ sub get_objects {
 	return $class->_get_by_type($info, "object");
 }
 
+sub get_name_summary {
+	my $class = shift;
+	my $config = shift;
+	my $new_config = {};
+	foreach my $def (@{$config->{definitions}}) {
+		if ($def->{type} eq "enum" || $def->{type} eq "object") {
+			$new_config->{$def->{name}} = $def->{type};
+		}
+	}
+	return $new_config;
+}
+
 1;

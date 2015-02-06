@@ -2,18 +2,16 @@ package Generator::Code::Object;
 
 use strict;
 use warnings;
-use Data::Dumper;
 
 use base 'Generator::Code';
 
 sub generate_package_name {
 	my $class = shift;
 	my $namespace = shift;
-	my $package = shift;
-	return "$namespace\_$package->{name}";
+	my $package_name = shift;
+	my $object_name = shift;
+	return (defined $namespace ? $namespace."::" : "").$class->_convert_package_to_namespace($package_name)."_".$object_name;
 }
-
-
 
 sub generate_package {
 	my $class = shift;
@@ -24,12 +22,12 @@ sub generate_package {
 
 	my $comment_string = "";
 	foreach my $comment (@{$comment}) {
-		$comment_string .= "// $comment\n";
+		$comment_string .= "# $comment\n";
 	}
 
-	my $full_package_name = $class->generate_package_name($namespace, $def);
+	my $full_package_name = $class->generate_package_name($namespace, $package_name, $def->{name});
 
-	return qq {package $namespace\:\:$full_package_name;
+	return qq {package $full_package_name;
 
 $comment_string
 use strict;
@@ -49,20 +47,34 @@ sub _generate_extends {
 sub _generate_field_line_start {
 	my $class = shift;
 	my $field = shift;
-	return "has '$field->{name}' => (is => 'rw',";
+	return "has '$field->{name}' => (is => 'rw'";
 }
 
 sub _generate_field_line_end {
 	my $class = shift;
 	my $field = shift;
-	return ");".(length($field->{comment}) > 0 ? " // $field->{comment}" : "");
+	return ");".(length($field->{comment}) > 0 ? " # $field->{comment}" : "");
+}
+
+sub _generate_data_type {
+	my $class = shift;
+	my $data_type = shift;
+	my $names = shift;
+	if (!defined $names->{$data_type}) {
+		return $data_type;
+	} elsif ($names->{$data_type} eq "enum") {
+		return "uint32";
+	} else {
+		return $data_type;
+	}
 }
 
 sub _generate_array {
 	my $class = shift;
 	my $field = shift;
+	my $names = shift;
 	my $line = $class->_generate_field_line_start($field);
-	$line .= " isa => ArrayRef[$field->{data_type}]";
+	$line .= ", isa => 'ArrayRef[".$class->_generate_data_type($field->{data_type}, $names)."]'";
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
 }
@@ -70,20 +82,22 @@ sub _generate_array {
 sub _generate_map {
 	my $class = shift;
 	my $field = shift;
+	my $names = shift;
 	my $line = $class->_generate_field_line_start($field);
-	$line .= " isa => 'HashRef', traits => [\"Mapped\"], ";
-	$line .= " key_type => [$field->{options}->{key}, $field->{data_type}]";
+	$line .= ", isa => 'HashRef', traits => [\"Mapped\"]";
+	$line .= ", key_type => [$field->{options}->{key}, \"".$class->_generate_data_type($field->{data_type}, $names)."\"]";
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
 }
 
-sub _generate_primitive {
+sub _generate_simple {
 	my $class = shift;
 	my $field = shift;
+	my $names = shift;
 	my $line = $class->_generate_field_line_start($field);
-	$line .= " isa => '$field->{data_type}', ";
+	$line .= ", isa => '".$class->_generate_data_type($field->{data_type}, $names)."'";
 	if ($field->{options}->{default}) {
-		$line .= "default => $field->{options}->{default}";
+		$line .= ", default => $field->{options}->{default}";
 	}
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
@@ -92,6 +106,7 @@ sub _generate_primitive {
 sub generate {
 	my $class = shift;
 	my $object = shift;
+	my $names = shift;
 
 	my $extends_string = "extends 'Message';\n";
 	my $field_string = ""; 
@@ -102,20 +117,14 @@ sub generate {
 		} else {
 			if ($field->{repeated}) {
 				if ($field->{options}->{key}) {
-					$line = $class->_generate_map($field);
+					$line = $class->_generate_map($field, $names);
 				} else {
-					$line = $class->_generate_array($field);
+					$line = $class->_generate_array($field, $names);
 				}
 			} else  {
-				$line .= $class->_generate_primitive($field);
+				$line .= $class->_generate_simple($field, $names);
 
 			}
-#			$field_string .= "has '$field->{name}' => (is => 'rw', isa => '$data_type',";
-#			if ($field->{type} eq "option") {
-#				$field_string .= " default => '$field->{value}',";
-#			}
-#			chop($field_string);
-#			$field_string .= ");\n";
 		}
 		if (length($line) > 0) {
 			$field_string .= $line."\n";
