@@ -7,6 +7,8 @@ use lib 'lib/';
 use Test::More;
 use Test::Deep;
 use Types::Array;
+use Data::Dumper;
+use Random;
 
 sub encode_decode {
 	my $type = shift;
@@ -15,18 +17,29 @@ sub encode_decode {
 	return $a[0];
 }
 
-my $int16 =  [-3131,4,345,234,1,63536,1412,4101,-242];
-my $uint16 = [3131,41412,4101,242,234,2875,948457,2];
-my $int32 =  [-3131,41412,4101,-242,23525,-2365,26,62,-65262];
-my $uint32 = [3131,41412,4101,242,34457,897549,32455];
-my $int64 =  [-3131,41412,4101,-242,3567,-72727,82484,-8628181];
-my $uint64 = [3131,41412,4101,242,235762572,24751216,171771];
-my $bool  =  [1,1,1,0,1,0,1,01,0,1,0,0];
+sub make_array {
+	my $n = shift;
+	my $type = shift;
+	my $width = shift;
+	my @array = ();
+	for (my $i=0; $i<$n; $i++) {
+		if ($type eq "uint") {
+			push(@array, Random->uint($width));
+		} else {
+			push(@array, Random->int($width));
+		}
+	}
+	return \@array;
+}
 
-is_deeply (encode_decode("int16",  $int16),  $int16,  "int16 [] encoding");
-is_deeply (encode_decode("uint16", $uint16), $uint16, "uint16 [] encoding");
-is_deeply (encode_decode("int32",  $int32),  $int32,  "int32 [] encoding");
-is_deeply (encode_decode("uint32", $uint32), $uint32, "uint32 [] encoding");
-is_deeply (encode_decode("int64",  $int64),  $int64,  "int64 [] encoding");
-is_deeply (encode_decode("uint64", $uint64), $uint64, "uint64 [] encoding");
-is_deeply (encode_decode("bool", $bool), $bool, "bool [] encoding");
+my $n = 25;
+for (my $i=0; $i<$n; $i++) {
+	foreach my $type ("int", "uint") {
+		foreach my $width (16, 32, 64) {
+			my $data_type = "$type$width";
+			my $array = make_array(Random->uint(8), $type, $width);
+			is_deeply( encode_decode($data_type, $array), $array, "$data_type array iter $i" );
+		}
+	}
+}
+
