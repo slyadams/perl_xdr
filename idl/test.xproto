@@ -23,7 +23,9 @@ enum Colors  { // my colours
 object Query { // a query
   option a = 0; // my my
   option b = 2001; // abc
-  required Colors color = 3;
+  required Colors color = 3 [default=GREEN];
+  required bool d = 4 [default=false];
+  required bool e = 5 [default=true];
 }
 
 object Query2 {

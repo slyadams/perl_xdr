@@ -59,10 +59,10 @@ sub _generate_field_line_end {
 sub _generate_data_type {
 	my $class = shift;
 	my $data_type = shift;
-	my $names = shift;
-	if (!defined $names->{$data_type}) {
+	my $lookup = shift;
+	if (!defined $lookup->{$data_type}) {
 		return $data_type;
-	} elsif ($names->{$data_type} eq "enum") {
+	} elsif ($lookup->{$data_type}->{type} eq "enum") {
 		return "uint32";
 	} else {
 		return $data_type;
@@ -72,9 +72,9 @@ sub _generate_data_type {
 sub _generate_array {
 	my $class = shift;
 	my $field = shift;
-	my $names = shift;
+	my $lookup = shift;
 	my $line = $class->_generate_field_line_start($field);
-	$line .= ", isa => 'ArrayRef[".$class->_generate_data_type($field->{data_type}, $names)."]'";
+	$line .= ", isa => 'ArrayRef[".$class->_generate_data_type($field->{data_type}, $lookup)."]'";
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
 }
@@ -82,10 +82,10 @@ sub _generate_array {
 sub _generate_map {
 	my $class = shift;
 	my $field = shift;
-	my $names = shift;
+	my $lookup = shift;
 	my $line = $class->_generate_field_line_start($field);
 	$line .= ", isa => 'HashRef', traits => [\"Mapped\"]";
-	$line .= ", key_type => [$field->{options}->{key}, \"".$class->_generate_data_type($field->{data_type}, $names)."\"]";
+	$line .= ", key_type => [$field->{options}->{key}, \"".$class->_generate_data_type($field->{data_type}, $lookup)."\"]";
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
 }
@@ -93,11 +93,19 @@ sub _generate_map {
 sub _generate_simple {
 	my $class = shift;
 	my $field = shift;
-	my $names = shift;
+	my $lookup = shift;
+	my $enum_package = shift;
 	my $line = $class->_generate_field_line_start($field);
-	$line .= ", isa => '".$class->_generate_data_type($field->{data_type}, $names)."'";
+	my $data_type = $field->{data_type};
+	$line .= ", isa => '".$class->_generate_data_type($data_type, $lookup)."'";
 	if ($field->{options}->{default}) {
-		$line .= ", default => $field->{options}->{default}";
+		my $default = $field->{options}->{default};
+		if ($data_type eq "bool") {
+			$default = ($default eq "true") ? 1 : 0;
+		} elsif (exists $lookup->{$data_type} && $lookup->{$data_type}->{type} eq "enum") {
+			$default = "$enum_package->$default";
+		}
+		$line .= ", default => $default";
 	}
 	$line .= $class->_generate_field_line_end($field);
 	return $line;
@@ -106,7 +114,8 @@ sub _generate_simple {
 sub generate {
 	my $class = shift;
 	my $object = shift;
-	my $names = shift;
+	my $lookup = shift;
+	my $enum_package = shift;
 
 	my $extends_string = "extends 'Message';\n";
 	my $field_string = ""; 
@@ -117,12 +126,12 @@ sub generate {
 		} else {
 			if ($field->{repeated}) {
 				if ($field->{options}->{key}) {
-					$line = $class->_generate_map($field, $names);
+					$line = $class->_generate_map($field, $lookup);
 				} else {
-					$line = $class->_generate_array($field, $names);
+					$line = $class->_generate_array($field, $lookup);
 				}
 			} else  {
-				$line .= $class->_generate_simple($field, $names);
+				$line .= $class->_generate_simple($field, $lookup, $enum_package);
 
 			}
 		}

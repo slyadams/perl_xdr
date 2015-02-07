@@ -10,18 +10,6 @@ use Generator::Code::Enum;
 use Generator::Code::Object;
 use Data::Dumper;
 
-sub get_name_summary {
-	my $class = shift;
-	my $config = shift;
-	my $new_config = {};
-	foreach my $def (@{$config->{definitions}}) {
-		if ($def->{type} eq "enum" || $def->{type} eq "object") {
-			$new_config->{$def->{type}}->{$def->{name}} = 1;
-		}
-	}
-	return $new_config;
-}
-
 sub generate {
 	my $class = shift;
 	my $idl_file = shift;
@@ -59,7 +47,9 @@ sub generate {
 
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);
+	my $enum_package = "";
 	if (scalar @{$enums} > 0) {
+		$enum_package = Generator::Code::Enum->generate_package_name($namespace, $package_name);
 		my $enum_string = Generator::Code::Enum->generate_package($namespace, $package_name);
 		foreach my $enum (@{$enums}) {
 			$enum_string .= Generator::Code::Enum->generate($enum)."\n\n";
@@ -69,12 +59,13 @@ sub generate {
 	}
 	# Produce object files
 	my $objects = Generator::Parser->get_objects($data);
-	my $names = Generator::Parser->get_name_summary($data);
+	my $lookup = Generator::Parser->get_name_lookup($data);
 
 	if (scalar @{$objects} > 0) {
 		foreach my $def (@{$objects}) {
 			my $object_string = Generator::Code::Object->generate_package($package_name, $namespace, $def, $def->{comment});
-			$object_string .= Generator::Code::Object->generate($def, $names)."\n";
+			
+			$object_string .= Generator::Code::Object->generate($def, $lookup, $enum_package)."\n";
 			$output_files->{Generator::Code::Object->generate_package_name(undef, $package_name, $def->{name})} = $object_string;
 		}
 	}
