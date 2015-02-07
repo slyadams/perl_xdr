@@ -11,6 +11,7 @@ package test.package;
 
 
 enum Colors  { // my colours
+    // pre comment
     RED = 0; // hello
     GREEN = 1;
     // what does on here?
