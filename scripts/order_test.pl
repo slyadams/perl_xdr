@@ -4,12 +4,12 @@ use strict;
 use warnings;
 
 use lib '../lib/';
-require Message;
-require Message::MessageA1;
-require Message::MessageA2;
-require Message::MessageA3;
-require Message::MessageA4;
-require Utils::Dumper;
+use Message;
+use Message::MessageA1;
+use Message::MessageA2;
+use Message::MessageA3;
+use Message::MessageA4;
+use Utils::Dumper;
 use Data::Dumper;
 
 my $m1 = new Message::MessageA1();

@@ -35,3 +35,4 @@ cmp_deeply ($b, num(-849240.234024,0.25), "float negative encoding");
 cmp_deeply ($c, num(9822349240.2134), "double encoding");
 cmp_deeply ($d, num(-9822349240.2134), "double negative encoding");
 
+done_testing();

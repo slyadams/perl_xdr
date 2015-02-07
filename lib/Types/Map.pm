@@ -3,7 +3,7 @@ package Types::Map;
 use strict;
 use warnings;
 
-require Types::Primitives;
+use Types::Primitives;
 
 sub get_template {
 	my $class = shift;

@@ -28,7 +28,7 @@ sub generate {
 	my $parser = Generator::Parser->get_parser();
 	my $file = Generator::File->read_file($idl_file);
 	my $output_files = {};
-#	$::RD_TRACE  = 1;
+	$::RD_TRACE  = 1;
 
 
 	$file =~ s/{/ {/gm;
@@ -43,7 +43,7 @@ sub generate {
 	chop($data->{package});
 	my $package_name = $data->{package};
 
-#	print Dumper($data);
+	print Dumper($data);
 
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);

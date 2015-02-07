@@ -1,0 +1,11 @@
+package test.a;
+
+// header_comment
+object Query {
+// pre_comment
+  required uint16 a = 1; // a_comment
+  required uint16 b = 1;
+// mid_comment
+  required uint16 c = 1;
+// last_comment
+}

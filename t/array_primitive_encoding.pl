@@ -43,3 +43,4 @@ for (my $i=0; $i<$n; $i++) {
 	}
 }
 
+done_testing();

@@ -7,9 +7,10 @@ use Traits::Mapped;
 use Loader;
 use Data::Dumper;
 
-my $messages = undef;
-my $ordered_attributes = {};
-my $inited = 0;
+our $messages = undef;
+our $ordered_attributes = {};
+our $inited = 0;
+our $message_lib_path = "../lib/Message/";
 
 sub _init {
 	my $self = shift;
@@ -96,7 +97,7 @@ sub _build_ordered_attributes {
 sub _load_messages {
 	my $class = shift;
 	if (!defined $messages) {
-		$messages = Loader->loadPlugins("../lib/Message/");
+		$messages = Loader->loadPlugins($message_lib_path);
 	}
 	return $messages;
 }
@@ -116,6 +117,42 @@ sub _get_message_meta {
 
 	my ($version, $type) = unpack("n n", $buffer);
 	return { version => $version, type => $type};
+}
+
+sub _data_item {
+	my $self = shift;
+	my $item = shift;
+	if (blessed $item) {
+		return $item->data();
+	} else {
+		return $item;
+	}
+}
+
+sub data {
+	my $self = shift;
+	my $result = {};
+	foreach my $attr (@{$self->_get_ordered_attributes()}) {
+		my $value = $attr->get_value($self);
+		my $type = ref($value);
+		my $data_value;
+		if ($type eq "") {
+			$data_value = $value;
+		} elsif ($type eq "ARRAY") {
+			$data_value = [];
+			foreach my $item (@{$value}) {
+				push(@{$data_value}, $self->_data_item($item));
+			}
+		} elsif ($type eq "HASH") {
+			for my $key (keys %{$value}) {
+				$data_value->{$key} = $self->_data_item($value->{$key});
+			}
+		} elsif (blessed($value)) {
+			$data_value = $value->data();
+		}
+		$result->{$attr->{name}} = $data_value;
+	}
+	return $result;
 }
 
 sub decode_message_fast {
@@ -146,21 +183,13 @@ sub decode_message {
 sub decode {
 	my $class = shift;
 	my $buffer = shift;
-#	my $fast = shift;
 
 	# decode first two fields to get type
 	my $message_meta = $class->_get_message_meta($buffer);
 	my $messages = $class->_load_messages();
-#	if ($fast) {
-#		my $result = {};
-#		my $message = Message->get_message_by_id($message_meta->{type});
-#		my $remaing_buffer = $message->decode_message_fast($buffer, $result);
-#		return $result;
-#	} else {
-		my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
-		my $remaining_buffer = $message->decode_message($buffer);
-		return $message;
-#	}
+	my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
+	my $remaining_buffer = $message->decode_message($buffer);
+	return $message;
 }
 
 sub decode_raw {

@@ -24,8 +24,11 @@ enum Colors  { // my colours
 object Query { // a query
   option a = 0; // my my
   option b = 2001; // abc
+// comment before color
   required Colors color = 3 [default=GREEN];
+//comment before d
   required bool d = 4 [default=false];
+// comment before e
   required bool e = 5 [default=true];
 }
 

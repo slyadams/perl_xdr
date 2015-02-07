@@ -3,9 +3,9 @@ package Types::Array;
 use strict;
 use warnings;
 
-require Types;
-require Loader;
-require Types::Primitives;
+use Types;
+use Loader;
+use Types::Primitives;
 
 sub get_template {
 	my $class = shift;

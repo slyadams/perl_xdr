@@ -5,11 +5,11 @@ use warnings;
 
 use lib '../lib/';
 use Utils::Time;
-require Message;
-require Message::MessageB1;
-require Message::Standalone1;
-require Message::Standalone2;
-require Utils::Dumper;
+use Message;
+use Message::MessageB1;
+use Message::Standalone1;
+use Message::Standalone2;
+use Utils::Dumper;
 use Data::Dumper;
 
 my $n=$ARGV[0] // 10000;

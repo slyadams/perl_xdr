@@ -27,7 +27,6 @@ sub _getPluginName {
 sub loadPlugins {
 	my $class = shift;
 	my $directory = shift;
-	
 	if (-d $directory) {
 		my $plugins;
 		# Instantiate each module and push into return array

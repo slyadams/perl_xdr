@@ -56,4 +56,10 @@ sub message {
 	return $text;
 }
 
+sub data {
+	my $class = shift;
+	my $message = shift;
+	return $message->data();
+}
+
 1;

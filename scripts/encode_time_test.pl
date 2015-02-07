@@ -3,9 +3,9 @@
 use lib '../lib/';
 use Utils::Time;
 
-require Message::Message1;
-require Message::Message2;
-require Message::Message3;
+use Message::Message1;
+use Message::Message2;
+use Message::Message3;
 my $m1 = new Message::Message1();
 my $m2 = new Message::Message2();
 my $m3 = new Message::Message3();

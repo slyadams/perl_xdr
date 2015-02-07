@@ -38,3 +38,4 @@ dies_ok { $m->bool(-2)} 'negative bool dies';
 #has 'uint64' => (is => 'rw', isa => 'uint64');
 #has 'int64' => (is => 'rw', isa => 'int64');
 
+done_testing();

@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use lib '../lib/';
-require Message;
-require Message::MessageB1;
-require Message::Standalone1;
-require Message::Standalone2;
-require Utils::Dumper;
+use Message;
+use Message::MessageB1;
+use Message::Standalone1;
+use Message::Standalone2;
+use Utils::Dumper;
 use Data::Dumper;
 
 my $b1 = new Message::MessageB1();
@@ -35,3 +35,6 @@ print "Message:\n".Utils::Dumper->message($ma1)."\n";
 
 $Data::Dumper::Deepcopy = 1;
 print "Message fast\n".Dumper(Message->decode_raw($buffer1));
+
+my $a = $b1->b_obj_sa1()->sa1_obj_sa2s();
+print Dumper($a);

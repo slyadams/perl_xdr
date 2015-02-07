@@ -120,6 +120,9 @@ sub generate {
 	my $extends_string = "extends 'Message';\n";
 	my $field_string = ""; 
 	foreach my $field (@{$object->{content}}) {
+		if ($field->{type} eq "comment") {
+			next;
+		}
 		my $line = "";
 		if (($field->{type} eq "option") && ($field->{name} eq "extends")) {
 			$extends_string = $class->_generate_extends($field);
