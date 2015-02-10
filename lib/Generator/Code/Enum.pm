@@ -5,12 +5,6 @@ use warnings;
 
 use base 'Generator::Code';
 
-# Generate full package name
-sub generate_package_name {
-	my $self = shift;
-	return "$self->{namespace}::$self->{package_name}::$self->{object}->{name}";
-}
-
 # Generate enum package header
 sub generate_package_header {
 	my $self = shift;

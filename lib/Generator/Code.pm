@@ -14,7 +14,7 @@ sub new {
 		use_packages => {},
 	};
 	bless($self, $class);
-	$self->{package_name} = $self->_convert_package_to_namespace($package_name);
+	$self->{package_name} = $self->_convert_package_to_namespace($namespace."::".$package_name);
 	return $self;
 }
 
@@ -37,9 +37,14 @@ sub generate_footer {
 sub _generate_package_name {
 	my $class = shift;
 	my $namespace = shift;
-	my $package_name = shift;
-	return "$namespace\:\:$package_name";
+	my $object_name = shift;
+	return "$namespace\:\:$object_name";
 }
 
+# Generate full package name
+sub generate_package_name {
+	my $self = shift;
+	return $self->_generate_package_name($self->{package_name},$self->{object}->{name});
+}
 
 1;

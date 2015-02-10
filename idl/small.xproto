@@ -1,25 +1,14 @@
 package test.a;
 
-//
-//a
-//
-
-enum X {
-// a
-//b
-    DID_RECEIVED                              = 684 [ description = "DID Received" ];
-// c
-// d
-}
-
-enum Y {
-	a = 1;
-	b = 2;
-}
-
 object Query {
-  required X				    = 1 [ default = 12 ];
-  required string e			    = 2 [ default = "def 1" ];
-  required string e			    = 3 [ default = 123 ];	
-  repeated uint f			    = 4 [ key = unit32 ];	
+  option version		= 1;
+  option type			= 10;
+  required uint32 a		= 1;
+}
+
+object Query2 {
+  option extends 		= "test.a.Query;
+  option version		= 1;
+  option type			= 11;
+  required uint32 b		= 1;
 }

@@ -36,6 +36,7 @@ sub generate {
 	my $data = $parser->File($file) or die "Cannot parse";
 	chop($data->{package});
 	my $package_name = $data->{package};
+#	print Dumper($data);
 
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);

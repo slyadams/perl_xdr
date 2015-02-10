@@ -5,12 +5,6 @@ use warnings;
 
 use base 'Generator::Code';
 
-# Generate full package name
-sub generate_package_name {
-	my $self = shift;
-	return $self->_generate_package_name($self->{namespace},"$self->{package_name}\:\:".$self->{object}->{name});
-}
-
 # Generate package header, including required enum uses
 sub generate_package_header {
 	my $self = shift;
@@ -34,18 +28,34 @@ sub generate_package_header {
 	return $header;
 }
 
+sub _convert_extends_to_package {
+	my $self = shift;
+	my $field_name = shift;
+	if (index($field_name,'.') == -1) {
+		return $self->_generate_package_name($self->{package_name}, $field_name);
+	} else {
+		return $self->_generate_package_name($self->{namespace}, $self->_convert_package_to_namespace($field_name));
+	}
+}
+
 # Generate the 'extends' directive
 sub _generate_extends {
 	my $self = shift;
 	my $field = shift;
-	return "extends '".$self->_generate_package_name("$self->{namespace}::$self->{package_name}", $field->{value})."';";
+	my $package_name = $self->_convert_extends_to_package($field->{value});
+	return "extends '$package_name';";
 }
 
 # Generate generic Moose attribute pre-amble
 sub _generate_field_line_start {
 	my $class = shift;
 	my $field = shift;
-	return "has '$field->{name}' => (is => 'rw'";
+	my $inherited = shift // 0;
+	if ($inherited) {
+		return "has '+$field->{name}' => (";
+	} else {
+		return "has '$field->{name}' => (is => 'rw'";
+	}
 }
 
 # Generate generic Moose attribute post-amble
@@ -65,7 +75,7 @@ sub _generate_data_type {
 	} elsif ($lookup->{$data_type}->{type} eq "enum") {
 		return "uint32";
 	} elsif ($lookup->{$data_type}->{type} eq "object") {
-		return $self->_generate_package_name("$self->{namespace}::$self->{package_name}", $data_type);
+		return $self->_generate_package_name($self->{package_name}, $data_type);
 	}
 }
 
@@ -92,6 +102,40 @@ sub _generate_map {
 	return $line;
 }
 
+sub _is_inherited {
+	my $self = shift;
+	my $field_name = shift;
+	my $lookup = shift;
+
+	my $object = $self->{object};
+	foreach my $field (@{$object->{content}}) {
+		if (($field->{type} eq "option") && ($field->{name} eq "extends")) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+sub _generate_inherited {
+	my $self = shift;
+	my $field = shift;
+	my $inherited_line = $self->_generate_field_line_start($field, 1);
+	$inherited_line .= "default => $field->{value}";
+	$inherited_line .= $self->_generate_field_line_end($field);
+
+	my $full_line = $self->_generate_field_line_start($field);
+	$full_line .= ", isa=>'header_int', default => $field->{value}";
+	$full_line .= $self->_generate_field_line_end($field);
+
+	my $lines = "eval {\n";
+	$lines 	 .= "\t$inherited_line\n";
+	$lines   .= "};\n";
+	$lines   .= "if (\$\@) {\n";
+	$lines   .= "\t$full_line\n";
+	$lines   .= "}\n";
+	return $lines;
+}
+
 # Generate the gubbins of a non arrayref/hashref attribute
 sub _generate_simple {
 	my $self = shift;
@@ -101,24 +145,27 @@ sub _generate_simple {
 	my $data_type = $field->{data_type};
 
 	my $line = $self->_generate_field_line_start($field);
-
 	if ($field->{type} eq "option") {
-		$data_type = "header_int";
-		$line .= ", default => $field->{value}";
-	}
-
-	$line .= ", isa => '".$self->_generate_data_type($data_type, $lookup)."'";
-	if ($field->{options}->{default}) {
-		my $default = $field->{options}->{default};
-		if ($data_type eq "bool") {
-			$default = ($default eq "true") ? 1 : 0;
-		} elsif (exists $lookup->{$data_type} && $lookup->{$data_type}->{type} eq "enum") {
-			my $enum_package = $enum_lookup->{$field->{data_type}};
-			$self->{use_packages}->{$enum_package} = 1;
-			$default = "$enum_package->$default";
-			
+		if ($field->{name} ne "type" && $field->{name} ne "version") {
+			return "";
+		} elsif ($self->_is_inherited($field->{value}, $lookup)) {
+			return $self->_generate_inherited($field);
 		}
-		$line .= ", default => $default";
+		$line .= ", isa => 'header_int', default => $field->{value}";
+	} else {
+		$line .= ", isa => '".$self->_generate_data_type($data_type, $lookup)."'";
+		if ($field->{options}->{default}) {
+			my $default = $field->{options}->{default};
+			if ($data_type eq "bool") {
+				$default = ($default eq "true") ? 1 : 0;
+			} elsif (exists $lookup->{$data_type} && $lookup->{$data_type}->{type} eq "enum") {
+				my $enum_package = $enum_lookup->{$field->{data_type}};
+				$self->{use_packages}->{$enum_package} = 1;
+				$default = "$enum_package->$default";
+				
+			}
+			$line .= ", default => $default";
+		}
 	}
 	$line .= $self->_generate_field_line_end($field);
 	return $line;
@@ -158,7 +205,7 @@ sub generate {
 	}
 	$field_string .= "\n".$self->generate_footer();
 
-	return $self->generate_package_header()."$extends_string\n\n$field_string";
+	return $self->generate_package_header()."\n$extends_string\n\n$field_string";
 }
 
 1;
