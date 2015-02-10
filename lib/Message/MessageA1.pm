@@ -5,7 +5,7 @@ use Moose;
 extends 'Message';
 
 has 'version' => (is => 'ro', isa => 'header_int', default => '1');
-has 'type' =>    (is => 'ro', isa => 'header_int', default => '4001');
+has 'type' =>    (is => 'ro', isa => 'header_int', default => '50');
 
 
 has 'uint16' => (is => 'rw', isa => 'uint16');

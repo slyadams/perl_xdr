@@ -2,46 +2,35 @@ package Loader;
 
 use strict;
 use warnings;
+use Module::Pluggable search_path => [ "Message" ], instantiate => 'new';
 
+sub new {
+	my $class = shift;
+	my $self = {};
+	return bless($self, $class);
+}
+
+# Instantiate plugin
 sub loadPlugin {
 	my $class = shift;
 	my $pluginName = shift;
-
 	Class::Load::load_class($pluginName);
 	return $pluginName->new();
 }
 
-# Convert a filename into a Perl module name
-sub _getPluginName {
-	my $class = shift;
-	my $fileName = shift;
-	my $pluginName = $fileName;
-	if ($pluginName =~ m/Message\/+(.*).pm/i) {
-		return "Message::$1";
-	} else {
-		return undef;
-	}
-}
-
 # Load plugins from a directory
 sub loadPlugins {
-	my $class = shift;
-	my $directory = shift;
-	if (-d $directory) {
-		my $plugins;
-		# Instantiate each module and push into return array
-		foreach my $pluginFileName ( <$directory/*.pm> ) {
-			my $pluginName = $class->_getPluginName($pluginFileName);
-			my $plugin = $class->loadPlugin($pluginName);
-			if (defined $plugin) {
-				eval {
-					$plugins->{name}->{$pluginName} = $plugin;
-					$plugins->{id}->{$plugin->type()} = $plugin;
-				};
-			}
+	my $self = shift;
+
+	my @plugin_objs = $self->plugins();
+	my $plugins = {};
+	foreach my $plugin (@plugin_objs) {
+		if ($plugin->can('type')) {
+			$plugins->{name}->{ref($plugin)} = $plugin;
+			$plugins->{id}->{$plugin->type()} = $plugin;
 		}
-		return $plugins;
 	}
+	return $plugins;
 }
 
 1;

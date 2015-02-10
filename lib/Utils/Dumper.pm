@@ -2,6 +2,7 @@ package Utils::Dumper;
 
 use Moose;
 
+# Dumps a hex structure for a given XDR buffer
 sub hex {
 	my $class = shift;
 	my $buffer = shift;
@@ -23,6 +24,7 @@ sub hex {
 	return $out;
 }
 
+# Outputs a pretty debug of a Message object
 sub message {
 	my $class = shift;
 	my $message = shift;
@@ -56,6 +58,8 @@ sub message {
 	return $text;
 }
 
+# Returns the 'data' version of a Message (i.e. same as if the source XDR buffer had been
+# decoded 'fast'
 sub data {
 	my $class = shift;
 	my $message = shift;

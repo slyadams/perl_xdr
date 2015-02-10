@@ -20,7 +20,7 @@ use constant templates => {
 	"double"	=> 'd>',
 
 	"bool"		=> 'N',
-	"string"	=> 'N/A*',
+	"string"	=> 'N/a*',
 	"bytes"		=> 'N/a*',
 
 };

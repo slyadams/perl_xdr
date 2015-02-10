@@ -5,18 +5,16 @@ use warnings;
 
 use base 'Generator::Code';
 
+# Generate full package name
 sub generate_package_name {
-	my $class = shift;
-	my $namespace = shift;
-	my $package_name = shift;
-	return (defined $namespace ? $namespace."::" : "").$class->_convert_package_to_namespace($package_name);
+	my $self = shift;
+	return "$self->{namespace}::$self->{package_name}::$self->{object}->{name}";
 }
 
-sub generate_package {
-	my $class = shift;
-	my $namespace = shift;
-	my $package_name = shift;
-	my $full_package_name = $class->generate_package_name($namespace, $package_name);
+# Generate enum package header
+sub generate_package_header {
+	my $self = shift;
+	my $full_package_name = $self->generate_package_name();
 	return qq {package $full_package_name;
 
 use strict;
@@ -25,24 +23,25 @@ use warnings;
 };
 }
 
+# Generate enum package
 sub generate {
-	my $class = shift;
-	my $enum = shift;
-
+	my $self = shift;
+	my $enum = $self->{object};
 	my $enum_string = "";
 	if ($enum->{comment}) {
 		foreach my $comment (@{$enum->{comment}}) {
 			$enum_string .= "# $comment\n";
 		}
 	}
-
 	$enum_string .= "use constant {\n";
 	foreach my $value (@{$enum->{content}}) {
-		my $comment = length($value->{comment}) > 0 ? "\t\t# $value->{comment}" : "";
-		$enum_string .= "\t$value->{name} => $value->{value},$comment\n";
+		if ($value->{type} ne "comment") {
+			my $comment = length($value->{comment}) > 0 ? "\t\t# $value->{comment}" : "";
+			$enum_string .= "\t$value->{name} => $value->{value},$comment\n";
+		}
 	}
 	$enum_string .= "};";
-	return $enum_string;
+	return $self->generate_package_header.$enum_string."\n\n1;";
 }
 
 1;

@@ -4,7 +4,7 @@ use Moose;
 
 extends 'Message::Message1';
 
-has '+type' => ( default => '1002');
+has '+type' => ( default => '20');
 
 has 'int16' => (is => 'rw', isa => 'int16');
 has 'int32' => (is => 'rw', isa => 'int32');

@@ -10,43 +10,9 @@ use Data::Dumper;
 our $messages = undef;
 our $ordered_attributes = {};
 our $inited = 0;
-our $message_lib_path = "../lib/Message/";
+#our $message_lib_path = "../lib/Message/";
 
-sub _init {
-	my $self = shift;
-	if (!$inited) {
-		$inited = 1;
-		$self->_get_ordered_attributes();
-		$self->_load_messages();
-	}
-}
-
-sub get_message_by_name {
-	my $class = shift;
-	my $package_name = shift;
-	return $messages->{name}->{$package_name};
-}
-
-sub get_message_by_id {
-	my $class = shift;
-	my $id = shift;
-	return $messages->{id}->{$id};
-}
-
-sub BUILD {
-	my $self = shift;
-	$self->_init();
-}
-
-sub _get_ordered_attributes {
-	my $self = shift;
-	my $ref = ref($self);
-
-	if (!defined $ordered_attributes->{$ref}) {
-		$ordered_attributes->{$ref} = $self->_build_ordered_attributes();
-	}
-	return $ordered_attributes->{$ref};
-}
+# Start of class init() methods
 
 sub _build_ordered_attributes {
 	my $self = shift;
@@ -94,12 +60,51 @@ sub _build_ordered_attributes {
 	return \@attributes;
 }
 
+sub _get_ordered_attributes {
+	my $self = shift;
+	my $ref = ref($self);
+
+	if (!defined $ordered_attributes->{$ref}) {
+		$ordered_attributes->{$ref} = $self->_build_ordered_attributes();
+	}
+	return $ordered_attributes->{$ref};
+}
+
 sub _load_messages {
 	my $class = shift;
 	if (!defined $messages) {
-		$messages = Loader->loadPlugins($message_lib_path);
+		my $loader = new Loader();
+		$messages = $loader->loadPlugins();
 	}
 	return $messages;
+}
+
+sub _init {
+	my $self = shift;
+	if (!$inited) {
+		$inited = 1;
+		$self->_get_ordered_attributes();
+		$self->_load_messages();
+	}
+}
+
+sub BUILD {
+	my $self = shift;
+	$self->_init();
+}
+
+# End of class init() methods
+
+sub get_message_by_name {
+	my $class = shift;
+	my $package_name = shift;
+	return $messages->{name}->{$package_name};
+}
+
+sub get_message_by_id {
+	my $class = shift;
+	my $id = shift;
+	return $messages->{id}->{$id};
 }
 
 sub encode {
@@ -155,7 +160,7 @@ sub data {
 	return $result;
 }
 
-sub decode_message_fast {
+sub decode_message_data {
 	my $self = shift;
 	my $buffer = shift;
 	my $result = shift;
@@ -184,8 +189,10 @@ sub decode {
 	my $class = shift;
 	my $buffer = shift;
 
-	# decode first two fields to get type
+	# decode first two fields to get type to decode with
 	my $message_meta = $class->_get_message_meta($buffer);
+
+	# decode using discovered message	
 	my $messages = $class->_load_messages();
 	my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
 	my $remaining_buffer = $message->decode_message($buffer);
@@ -195,12 +202,15 @@ sub decode {
 sub decode_raw {
 	my $class = shift;
 	my $buffer = shift;
-
 	my $result = {};
+
+	# decode first two fields to get type to decode with
 	my $message_meta = $class->_get_message_meta($buffer);
+
+	# decode using discovered message	
 	my $messages = $class->_load_messages();
 	my $message = Message->get_message_by_id($message_meta->{type});
-	my $remaing_buffer = $message->decode_message_fast($buffer, $result);
+	my $remaing_buffer = $message->decode_message_data($buffer, $result);
 	return $result;
 }
 

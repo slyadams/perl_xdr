@@ -5,6 +5,7 @@ use warnings;
 
 use Types::Primitives;
 
+# Returns the pack/unpack template for a given map
 sub get_template {
 	my $class = shift;
 	my $key_type = shift;
@@ -27,10 +28,10 @@ sub encode {
 	if (!Types::Primitives->can($key_type)) {
 		die "Cannot use a non-primitive as a map key";
 	} elsif (Types::Primitives->can($key_type) && Types::Primitives->can($value_type)) {
-		# Simplest type of encode
+		# Simplest type of encode where both key/value are primitives, so can blindly decode
 		return pack($self->get_template($key_type, $value_type, "encode"), (scalar keys (%$hash)), %$hash);
 	} else {
-		# encode length, then values
+		# Value is non-primtive so need to manually pack the length then each value
 		my $template = Types::Primitives->templates->{$key_type}." a*";
 		my $buffer = pack("N", (scalar keys (%$hash)));
 		foreach my $key (keys %{$hash}) {
@@ -50,13 +51,13 @@ sub decode {
 	if (!Types::Primitives->can($key_type)) {
 		die "Cannot use a non-primitive as a map key";
 	} elsif (Types::Primitives->can($key_type) && Types::Primitives->can($value_type)) {
-		# Simplest type of decode
+		# Simplest type of decode where both key/value are primitives so can blindy decode
 		my @array = unpack($class->get_template($key_type, $value_type, "decode"), $buffer);
 		my $new_buffer = pop @array;
 		my %value = @array;
         	return (\%value, $new_buffer);
 	} else {
-		# decode length, then values
+		# Value is non-primtive so need to manually decode the length, then each value
 		my ($n, $new_buffer) = unpack("N a*", $buffer);
 		my $hash;
 		my $key;
@@ -67,7 +68,7 @@ sub decode {
 			if ($fast) {
 				$obj = Message->get_message_by_name($value_type);
 				my $sub_result = {};
-				$new_buffer = $obj->decode_message_fast($new_buffer, $sub_result);
+				$new_buffer = $obj->decode_message_data($new_buffer, $sub_result);
 				$hash->{$key} = $sub_result;
 			} else {
 				$obj = Loader->loadPlugin($value_type);

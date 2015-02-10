@@ -3,6 +3,7 @@ package Generator::Parser;
 use Parse::RecDescent;
 use Generator::Grammar;
 
+# Create parser
 sub get_parser {
 	my $class = shift;
 
@@ -19,20 +20,22 @@ sub _get_by_type {
 	return \@e;
 }
 
+# Return all enums from a parser result
 sub get_enums {
 	my $class = shift;
 	my $info = shift;
 	return $class->_get_by_type($info, "enum");
 }
 
+# Return all ojects from a parser result
 sub get_objects {
 	my $class = shift;
 	my $info = shift;
 	return $class->_get_by_type($info, "object");
 }
 
+# Arrange all items from a parser result into a hash keyed by the objects name
 sub get_name_lookup {
-#sub get_name_summary {
 	my $class = shift;
 	my $config = shift;
 	my $new_config = {};

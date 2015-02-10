@@ -8,6 +8,7 @@ use Loader;
 use strict;
 use warnings;
 
+# Entry point for encoding Perl Messages and values into XDR, delegates into the Types/ namespace
 sub encode {
 	my $class = shift;
 	my $attr = shift;
@@ -27,7 +28,7 @@ sub encode {
 				my $key_types = $attr->key_types();
 				return Types::Map->encode($key_types->[0], $key_types->[1], $hash);
 			} else {
-				die "Unsuppored non-mapped hashref ".$a->name();
+				die "Unsuppored non-mapped hashref ".$attr->name();
 			}
 		} elsif ($constraint->parent()->name() eq "Object") {
 			my $obj = $attr->get_value($message);
@@ -39,6 +40,9 @@ sub encode {
 	}
 }
 
+# Entry point for decoding XDR values into Perl Messages and values XDR, delegates into the Types/ namespace
+# Supports both full 'Message' support where the return values are full Message objects and
+# 'fast' mode where only Perl structures are used in the $result variable.
 sub decode {
 	my $class = shift;
 	my $attr = shift;
@@ -78,7 +82,7 @@ sub decode {
 			if ($result) {
 				my $obj = Message->get_message_by_name($type);
 				my $sub_result = {};
-				my $new_buffer = $obj->decode_message_fast($buffer, $sub_result);
+				my $new_buffer = $obj->decode_message_data($buffer, $sub_result);
 				$result->{$attr->name()} = $sub_result;
 				return ($sub_result, $new_buffer);
 			} else {

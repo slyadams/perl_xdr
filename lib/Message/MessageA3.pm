@@ -4,7 +4,7 @@ use Moose;
 
 extends 'Message::MessageA2';
 
-has '+type' =>    ( default => '4003');
+has '+type' =>    ( default => '52');
 
 
 has 'uint32s' => (is => 'rw', isa => 'ArrayRef[uint32]');

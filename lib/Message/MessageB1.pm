@@ -12,7 +12,7 @@ use constant {
 
 
 has 'version' => (is => 'ro', isa => 'header_int', default => '1');
-has 'type' =>    (is => 'ro', isa => 'header_int', default => '5001');
+has 'type' =>    (is => 'ro', isa => 'header_int', default => '60');
 
 has 'b_uint16_1' => (is => 'rw', isa => 'uint16');
 has 'b_obj_sa1' => (is => 'rw', isa => 'Message::Standalone1');
