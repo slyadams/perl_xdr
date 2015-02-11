@@ -32,7 +32,7 @@ sub message {
 	my $include_header = shift // 1;
 	my $text = $include_header ? " "x$indent.ref($message)."\n" : "";
 	$indent += 3;
-	
+
 	foreach my $attr (@{$message->_get_ordered_attributes()}) {
 		my $value = $attr->get_value($message);
 		my $ref_type = ref($value);
@@ -73,7 +73,7 @@ sub message {
 #			chomp($text_value);
 #		}
 		my $name_width = 40-$indent;
-		print $attr->name()."\t".$attr->{isa}."\t".$text_value."\n";
+		#print $attr->name()."\t".$attr->{isa}."\t".$text_value."\n";
 		$text .= sprintf("%${indent}s %-${name_width}s %-30s %-30s\n"," ",$attr->name(),$attr->{isa}, $text_value);
 	}
 	return $text;

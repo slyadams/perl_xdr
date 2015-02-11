@@ -15,9 +15,9 @@ our $inited = 0;
 # Start of class init() methods
 
 sub _build_ordered_attributes {
-	my $self = shift;
+	my $class = shift;
 
-	my $meta = $self->meta();
+	my $meta = $class->meta();
 	my $classes = {};
 	my $i = 0;
 	foreach my $class ($meta->class_precedence_list()) {
@@ -27,7 +27,6 @@ sub _build_ordered_attributes {
 			$classes->{$class} = $i++;
 		}
 	}
-
 	my $s = sub {
 
 		# I don't like this, I have to sort by the first class where a field is created
@@ -48,7 +47,7 @@ sub _build_ordered_attributes {
 		} elsif ($d < 0) {
 			return 1;
 		} else {
-			return $a->insertion_order() cmp $b->insertion_order();
+			return $a->insertion_order() <=> $b->insertion_order();
 		}
 
 	};
@@ -62,7 +61,7 @@ sub _build_ordered_attributes {
 
 sub _get_ordered_attributes {
 	my $self = shift;
-	my $ref = ref($self);
+	my $ref = ref($self) || $self;
 
 	if (!defined $ordered_attributes->{$ref}) {
 		$ordered_attributes->{$ref} = $self->_build_ordered_attributes();
@@ -107,6 +106,8 @@ sub get_message_by_id {
 	return $messages->{id}->{$id};
 }
 
+# Encode functions
+
 sub encode {
 	my $self = shift;
 	my $buffer = "";
@@ -115,6 +116,43 @@ sub encode {
 	}
 	return $buffer;
 }
+
+sub from_data {
+	my $class = shift;
+	my $data = shift;
+	my $message;
+	foreach my $attr (@{$class->_get_ordered_attributes()}) {
+		my $attr_type = Types->get_attr_type($attr);
+
+		if ($attr_type == Types->OBJECT) {
+			Class::Load::load_class($attr->{isa});
+			$data->{$attr->{name}} = $attr->{isa}->from_data($data->{$attr->{name}});
+		} elsif ($attr_type == Types->ARRAY) {
+			my $constraint_type = $attr->type_constraint()->type_parameter()->name;
+			if (!Types::Primitives->can($constraint_type)) {
+				Class::Load::load_class($constraint_type);
+				my @array;
+				foreach my $item (@{$data->{$attr->{name}} // []}) {
+					push(@array, $constraint_type->from_data($item));
+				}
+				$data->{$attr->{name}} = \@array;
+			}
+		} elsif ($attr_type == Types->MAP) {
+			my $constraint_type = $attr->key_types()->[1];
+			if (!Types::Primitives->can($constraint_type)) {
+				Class::Load::load_class($constraint_type);
+				my %hash;
+				foreach my $key (keys %{$data->{$attr->{name}} // {} }) {
+					$hash{$key} = $constraint_type->from_data($data->{$attr->{name}}->{$key});
+				}
+				$data->{$attr->{name}} = \%hash;
+			}
+		}
+	}
+	return new $class($data);
+}
+
+# Decode functions
 
 sub _get_message_meta {
 	my $class = shift;

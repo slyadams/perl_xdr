@@ -12,9 +12,6 @@ use Message::Strings;
 use Utils::Dumper;
 use Data::Dumper;
 
-
-$Message::message_lib_path = "lib/Message";
-
 my $ref_data = {
           'version' => "1",
           'type' => "2",

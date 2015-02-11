@@ -53,8 +53,6 @@ my $ref_data = {
           'o1_uint16_2' => 3
         };
 
-$Message::message_lib_path = "lib/Message";
-
 my $o1 = new Message::Object1();
 my $c1_1 = new Message::Object1_Child1();
 

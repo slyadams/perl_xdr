@@ -14,8 +14,9 @@ sub new {
 sub loadPlugin {
 	my $class = shift;
 	my $pluginName = shift;
+	my $args = shift // {};
 	Class::Load::load_class($pluginName);
-	return $pluginName->new();
+	return $pluginName->new($args);
 }
 
 # Load plugins from a directory
