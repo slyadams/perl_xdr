@@ -26,8 +26,13 @@ sub loadPlugins {
 	my $plugins = {};
 	foreach my $plugin (@plugin_objs) {
 		if ($plugin->can('type')) {
-			$plugins->{name}->{ref($plugin)} = $plugin;
-			$plugins->{id}->{$plugin->type()} = $plugin;
+			my $type = $plugin->type();
+			if (defined $type) {
+				$plugins->{name}->{ref($plugin)} = $plugin;
+				$plugins->{id}->{$plugin->type()} = $plugin;
+			} else {
+				print STDERR "Cannot find type for object '".ref($plugin)."', this object is being discarded\n";
+			}
 		}
 	}
 	return $plugins;
