@@ -6,17 +6,10 @@ use strict;
 use File::Slurp;
 use File::Path;
 
-sub _strip_comments {
-	my $class = shift;
-	my $file = shift;
-	return $file;
-}
-
 sub read_file {
 	my $class = shift;
 	my $file_name = shift;
-	my $file = File::Slurp::read_file($file_name);
-	return $class->_strip_comments($file);
+	return File::Slurp::read_file($file_name);
 }
 
 # Write a file, creating paths as required

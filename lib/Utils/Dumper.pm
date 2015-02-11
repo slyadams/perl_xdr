@@ -35,24 +35,45 @@ sub message {
 	
 	foreach my $attr (@{$message->_get_ordered_attributes()}) {
 		my $value = $attr->get_value($message);
-		my $type = ref($value);
+		my $ref_type = ref($value);
+		my $data_type = $attr->{isa};
 		my $text_value = "n/a";
-		if ($type eq "") {
-			$text_value = $value;
-		} elsif ($type eq "ARRAY") {
-			$text_value = "[".join(",", @{$value})."]";
-		} elsif ($type eq "HASH") {
+
+		if ($data_type =~ m/HashRef/) {
+			$value = $value // {};
 			$text_value = "{ ";
 			for my $key (keys %{$value}) {
 				$text_value .= " $key => $value->{$key},"; 
 			}
 			chop($text_value);
 			$text_value .= "  }";
+		} elsif ($data_type =~ m/ArrayRef/) {
+			$value = $value // [];
+			$text_value = "[".join(",", @{$value})."]";
 		} elsif (blessed($value)) {
 			$text_value = "\n".$class->message($value, $indent, 0);
 			chomp($text_value);
+		} else {
+			$text_value = $value;
 		}
+
+#		if ($type eq "") {
+#			$text_value = $value;
+#		} elsif ($type eq "ARRAY") {
+#			$text_value = "[".join(",", @{$value})."]";
+#		} elsif ($type eq "HASH") {
+#			$text_value = "{ ";
+#			for my $key (keys %{$value}) {
+#				$text_value .= " $key => $value->{$key},"; 
+#			}
+#			chop($text_value);
+#			$text_value .= "  }";
+#		} elsif (blessed($value)) {
+#			$text_value = "\n".$class->message($value, $indent, 0);
+#			chomp($text_value);
+#		}
 		my $name_width = 40-$indent;
+		print $attr->name()."\t".$attr->{isa}."\t".$text_value."\n";
 		$text .= sprintf("%${indent}s %-${name_width}s %-30s %-30s\n"," ",$attr->name(),$attr->{isa}, $text_value);
 	}
 	return $text;

@@ -9,17 +9,17 @@ use base 'Generator::Code';
 sub generate_package_header {
 	my $self = shift;
 
-	my $comment_string = "";
-	foreach my $comment (@{$self->{object}->{comment}}) {
-		$comment_string .= "# $comment\n";
-	}
+#	my $comment_string = "";
+#	foreach my $comment (@{$self->{object}->{comment}}) {
+#		$comment_string .= "# $comment\n";
+#	}
 
 	my $full_package_name = $self->generate_package_name();
 
 	my $header = 	"package $full_package_name;\n\n";
 	$header .= 	"use strict;\n";
 	$header .= 	"use warnings;\n";
-	$header .= length($comment_string) > 0 ? "\n$comment_string\n" : "";
+#	$header .= length($comment_string) > 0 ? "\n$comment_string\n" : "";
 
 	foreach my $package (sort keys %{$self->{use_packages}}) {
 		$header .= "use $package;\n";
@@ -62,7 +62,8 @@ sub _generate_field_line_start {
 sub _generate_field_line_end {
 	my $class = shift;
 	my $field = shift;
-	return ");".(length($field->{comment}) > 0 ? " # $field->{comment}" : "");
+	return ");";
+#".(length($field->{comment}) > 0 ? " # $field->{comment}" : "");
 }
 
 # Generate a data type value for an attribute line, whether its primitive, enum or object
@@ -178,7 +179,7 @@ sub generate {
 	my $enum_lookup = shift;
 
 	my $object = $self->{object};
-	my $extends_string = "extends 'Message';\n";
+	my $extends_string = "extends 'Message';";
 	my $field_string = ""; 
 	foreach my $field (@{$object->{content}}) {
 		if ($field->{type} eq "comment") {

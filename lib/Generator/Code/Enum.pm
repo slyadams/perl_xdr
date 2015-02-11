@@ -22,16 +22,16 @@ sub generate {
 	my $self = shift;
 	my $enum = $self->{object};
 	my $enum_string = "";
-	if ($enum->{comment}) {
-		foreach my $comment (@{$enum->{comment}}) {
-			$enum_string .= "# $comment\n";
-		}
-	}
+#	if ($enum->{comment}) {
+#		foreach my $comment (@{$enum->{comment}}) {
+#			$enum_string .= "# $comment\n";
+#		}
+#	}
 	$enum_string .= "use constant {\n";
 	foreach my $value (@{$enum->{content}}) {
 		if ($value->{type} ne "comment") {
-			my $comment = length($value->{comment}) > 0 ? "\t\t# $value->{comment}" : "";
-			$enum_string .= "\t$value->{name} => $value->{value},$comment\n";
+#			my $comment = length($value->{comment}) > 0 ? "\t\t# $value->{comment}" : "";
+			$enum_string .= "\t$value->{name} => $value->{value},\n";
 		}
 	}
 	$enum_string .= "};";

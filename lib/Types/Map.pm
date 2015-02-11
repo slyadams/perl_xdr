@@ -59,7 +59,7 @@ sub decode {
 	} else {
 		# Value is non-primtive so need to manually decode the length, then each value
 		my ($n, $new_buffer) = unpack("N a*", $buffer);
-		my $hash;
+		my $hash = {};
 		my $key;
 		my $template = Types::Primitives->templates->{$key_type}." a*";
 		for (my $i=0; $i<$n; $i++) {
