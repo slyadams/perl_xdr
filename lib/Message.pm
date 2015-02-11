@@ -199,7 +199,7 @@ sub decode {
 	return $message;
 }
 
-sub decode_raw {
+sub decode_data {
 	my $class = shift;
 	my $buffer = shift;
 	my $result = {};

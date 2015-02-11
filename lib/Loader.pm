@@ -25,10 +25,13 @@ sub loadPlugins {
 	my @plugin_objs = $self->plugins();
 	my $plugins = {};
 	foreach my $plugin (@plugin_objs) {
+		# All plugins go into the lookup for decoding sub messages
+		$plugins->{name}->{ref($plugin)} = $plugin;
+
+		# Only messages with types can be top level decoded based on 'type'
 		if ($plugin->can('type')) {
 			my $type = $plugin->type();
 			if (defined $type) {
-				$plugins->{name}->{ref($plugin)} = $plugin;
 				$plugins->{id}->{$plugin->type()} = $plugin;
 			} else {
 				print STDERR "Cannot find type for object '".ref($plugin)."', this object is being discarded\n";

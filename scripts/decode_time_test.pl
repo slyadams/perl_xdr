@@ -34,14 +34,18 @@ $sa1->sa1_obj_sa2s([$sa2,$sa2,$sa2,$sa2]);
 $b1->b_obj_sa2_h({3=>$sa2, 4=>$sa2});
 
 my $buffer1 = $b1->encode();
+print "Decoding\n";
+print Utils::Dumper->message($b1)."\n";
+print Utils::Dumper->hex($buffer1)."\n";
 
-my $mode = $ARGV[1] // 1;
+
+my $mode = $ARGV[1] // 0;
 my $start = Utils::Time->get_time_usec();
 
 
 for (my $i=0; $i<$n; $i++) {
 	if ($mode == 1) {	
-		Message->decode_raw($buffer1);
+		Message->decode_data($buffer1);
 	} else {
 		Message->decode($buffer1);
 	}
