@@ -15,39 +15,16 @@ use constant {
 	OBJECT => 3,
 };
 
-# return the type of an attribute
-sub get_attr_type {
-	my $class = shift;
-	my $attr = shift;
-	if (Types::Primitives->can($attr->{isa})) {
-		return PRIMITIVE;
-	} else {
-		my $constraint = $attr->type_constraint();
-		my $constraint_parent_name = $constraint->parent()->name();
-		if ($constraint_parent_name eq "ArrayRef") {
-			return ARRAY;
-		} elsif ($constraint->name() eq "HashRef") {
-			return MAP;
-		} elsif ($constraint_parent_name eq "Object") {
-			return OBJECT;
-		} else {
-			return undef;
-		}
-	}
-}
-
 # Entry point for encoding Perl Messages and values into XDR, delegates into the Types/ namespace
 sub encode {
 	my $class = shift;
 	my $attr = shift;
 	my $message = shift;
-	my $type = $attr->{isa};
 
-
-	my $attr_type = $class->get_attr_type($attr);
-
+	my $attr_type = $attr->data_type();
 	if ($attr_type == PRIMITIVE) {
 		my $value = $attr->get_value($message);
+		my $type = $attr->{isa};
 		return Types::Primitives->encode($type, $value);
 	} else {
 		my $constraint = $attr->type_constraint();
@@ -66,8 +43,9 @@ sub encode {
 			my $obj = $attr->get_value($message);
 			return $obj->encode($message);
 		} else {
-			print "Unknown: ".$constraint->parent()->name()."\n";
-			return undef;
+			die "EncodeError: Unknown type '".$constraint->parent()->name()."'";
+			#print "Unknown: ".$constraint->parent()->name()."\n";
+			#return undef;
 		}
 	}
 }
@@ -81,9 +59,11 @@ sub decode {
 	my $message = shift;
 	my $buffer = shift;
 	my $result = shift;
-
 	my $type = $attr->{isa};
-	if (Types::Primitives->can($type)) {
+
+	my $attr_type = $attr->data_type();
+
+	if ($attr_type == PRIMITIVE) {
 		my ($value, $new_buffer) = Types::Primitives->decode($type, $buffer);
 		if ($result) {
 			$result->{$attr->name()} = $value;
@@ -93,7 +73,7 @@ sub decode {
 		return ($value, $new_buffer);
 	} else {
 		my $constraint = $attr->type_constraint();
-		if ($constraint->parent()->name() eq "ArrayRef") {
+		if ($attr_type == ARRAY) {
 			my ($value, $new_buffer) = Types::Array->decode($constraint->type_parameter()->name, $buffer, defined $result);
 			if ($result) {
 				$result->{$attr->name()} = $value;
@@ -101,7 +81,7 @@ sub decode {
 				$attr->set_value($message, $value);
 			}
 			return ($value, $new_buffer);
-		} elsif ($constraint->name() eq "HashRef") {
+		} elsif ($attr_type == MAP) {
 			my $key_types = $attr->key_types();
 			my ($value, $new_buffer) = Types::Map->decode($key_types->[0], $key_types->[1], $buffer, defined $result);
 			if ($result) {
@@ -110,7 +90,7 @@ sub decode {
 				$attr->set_value($message, $value);
 			}
 			return ($value, $new_buffer);
-		} elsif ($constraint->parent()->name() eq "Object") {
+		} elsif ($attr_type == OBJECT) {
 			if ($result) {
 				my $obj = Message->get_message_by_name($type);
 				my $sub_result = {};
@@ -123,6 +103,8 @@ sub decode {
 				$attr->set_value($message, $obj);
 				return ($obj, $new_buffer);
 			}
+		} else {
+			die "DecodeError: Unknown type '".$constraint->parent()->name()."'";
 		}
 	}
 }

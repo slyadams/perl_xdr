@@ -57,23 +57,7 @@ sub message {
 			$text_value = $value;
 		}
 
-#		if ($type eq "") {
-#			$text_value = $value;
-#		} elsif ($type eq "ARRAY") {
-#			$text_value = "[".join(",", @{$value})."]";
-#		} elsif ($type eq "HASH") {
-#			$text_value = "{ ";
-#			for my $key (keys %{$value}) {
-#				$text_value .= " $key => $value->{$key},"; 
-#			}
-#			chop($text_value);
-#			$text_value .= "  }";
-#		} elsif (blessed($value)) {
-#			$text_value = "\n".$class->message($value, $indent, 0);
-#			chomp($text_value);
-#		}
 		my $name_width = 40-$indent;
-		#print $attr->name()."\t".$attr->{isa}."\t".$text_value."\n";
 		$text .= sprintf("%${indent}s %-${name_width}s %-30s %-30s\n"," ",$attr->name(),$attr->{isa}, $text_value);
 	}
 	return $text;

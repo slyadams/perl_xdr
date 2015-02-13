@@ -4,8 +4,8 @@ use lib '../lib/';
 use lib 'lib/';
 use Test::More;
 use Test::Exception;
-
-require_ok('Message::Simple');
+use Message::Simple;
+use Message;
 
 my $m = new Message::Simple();
 

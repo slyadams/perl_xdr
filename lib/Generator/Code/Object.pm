@@ -25,6 +25,7 @@ sub generate_package_header {
 		$header .= "use $package;\n";
 	}
 	$header .= "use Moose;\n";
+	$header .= "use Types;\n";
 	return $header;
 }
 
@@ -86,7 +87,8 @@ sub _generate_array {
 	my $field = shift;
 	my $lookup = shift;
 	my $line = $self->_generate_field_line_start($field);
-	$line .= ", isa => 'ArrayRef[".$self->_generate_data_type($field->{data_type}, $lookup)."]'";
+	$line .= ", isa => 'ArrayRef[".$self->_generate_data_type($field->{data_type}, $lookup)."]', traits => [\"DataType\"]";
+	$line .= ", data_type => Types::ARRAY";
 	$line .= $self->_generate_field_line_end($field);
 	return $line;
 }
@@ -97,8 +99,8 @@ sub _generate_map {
 	my $field = shift;
 	my $lookup = shift;
 	my $line = $self->_generate_field_line_start($field);
-	$line .= ", isa => 'HashRef', traits => [\"Mapped\"]";
-	$line .= ", key_types => [$field->{options}->{key}, \"".$self->_generate_data_type($field->{data_type}, $lookup)."\"]";
+	$line .= ", isa => 'HashRef', traits => [\"Mapped\", \"DataType\"]";
+	$line .= ", key_types => [$field->{options}->{key}, \"".$self->_generate_data_type($field->{data_type}, $lookup)."\"], data_type => Types::MAP";
 	$line .= $self->_generate_field_line_end($field);
 	return $line;
 }
@@ -167,6 +169,12 @@ sub _generate_simple {
 			}
 			$line .= ", default => $default";
 		}
+	}
+	$line .= ", traits => [\"DataType\"]";
+	if (!defined $lookup->{$data_type} || $lookup->{$data_type}->{type} eq "enum") {
+		$line .= ", data_type => Types::PRIMITIVE";
+	} else {
+		$line .= ", data_type => Types::OBJECT";
 	}
 	$line .= $self->_generate_field_line_end($field);
 	return $line;

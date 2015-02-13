@@ -24,25 +24,25 @@ use constant defaults => {
 	"int16"		=> 0,
 	"uint32"	=> 0,
 	"int32"		=> 0,
-	"uint64"	=> 1,
+	"uint64"	=> 0,
 	"int64"		=> 0,
 	"float"		=> 0,
 	"double"	=> 0,
 	"bool"		=> 0,
-	"string"	=> "1234",
+	"string"	=> "",
 	"bytes"		=> "",
 };
 
 sub get_template {
 	my $self = shift;
 	my $type = shift;
-
 	return Types::Primitives->templates->{$type};
 }
 
 sub get_default {
 	my $self = shift;
 	my $type = shift;
+
 
 	return Types::Primitives->defaults->{$type};
 }
@@ -59,7 +59,7 @@ sub encode {
 	my $type = shift;
 	my $value = shift;
 	if (!$class->can($type)) {
-		print STDERR "Undefined primitive: '$type'\n";
+		die "PrimtitiveEncode: Undefined primitive '$type'";
 	}	
 	# Not using class methods for speed
 	return pack(Types::Primitives->templates->{$type}, $value // Types::Primitives->defaults->{$type});

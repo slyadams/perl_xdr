@@ -4,13 +4,13 @@ use Moose;
 use Types;
 use Types::PrimitiveConstraints;
 use Traits::Mapped;
+use Traits::DataType;
 use Loader;
 use Data::Dumper;
 
 our $messages = undef;
 our $ordered_attributes = {};
 our $inited = 0;
-#our $message_lib_path = "../lib/Message/";
 
 # Start of class init() methods
 
@@ -35,21 +35,31 @@ sub _build_ordered_attributes {
 		# the default is changed, thereby messing up where it would be encoded.
 		# To fix this, I look up the highest level reader for the attribute, which 'should' be
 		# the first class which defined the attribute
-		my @a_associated_methods = $a->associated_methods();
-		my @b_associated_methods = $b->associated_methods();
-		my $a_class = $a_associated_methods[0][0]->package_name();
-		my $b_class = $b_associated_methods[0][0]->package_name();
+		# I also force 'option version' and 'option type' to positions 1 and 2
 
-		#my $d = $classes->{$a->associated_class()->name()} - $classes->{$b->associated_class()->name()};
-		my $d = $classes->{$a_class} - $classes->{$b_class};
-		if ($d > 0) {
+		if (($a->{isa} eq "header_int") && ($b->{isa} eq "header_int")) {
+			# Seeing both type and version so return based on setting version first
+			return $a->{name} eq "version" ? -1 : 1;
+		} elsif ($a->{isa} eq "header_int") {
+			# Only seeing 1 header_int, so it comes first
 			return -1;
-		} elsif ($d < 0) {
+		} elsif ($b->{isa} eq "header_int") {
+			# Only seeing 1 header_int, so it comes first
 			return 1;
 		} else {
-			return $a->insertion_order() <=> $b->insertion_order();
+			my @a_associated_methods = $a->associated_methods();
+			my @b_associated_methods = $b->associated_methods();
+			my $a_class = $a_associated_methods[0][0]->package_name();
+			my $b_class = $b_associated_methods[0][0]->package_name();
+			my $d = $classes->{$a_class} - $classes->{$b_class};
+			if ($d > 0) {
+				return -1;
+			} elsif ($d < 0) {
+				return 1;
+			} else {
+				return $a->insertion_order() <=> $b->insertion_order();
+			}
 		}
-
 	};
 	my @attributes = ();
 	my @a = $meta->get_all_attributes();
@@ -122,7 +132,7 @@ sub from_data {
 	my $data = shift;
 	my $message;
 	foreach my $attr (@{$class->_get_ordered_attributes()}) {
-		my $attr_type = Types->get_attr_type($attr);
+		my $attr_type = $attr->data_type();
 
 		if ($attr_type == Types->OBJECT) {
 			Class::Load::load_class($attr->{isa});
@@ -232,7 +242,11 @@ sub decode {
 
 	# decode using discovered message	
 	my $messages = $class->_load_messages();
-	my $message = Loader->loadPlugin(ref($messages->{id}->{$message_meta->{type}}));
+	my $message_class = Message->get_message_by_id($message_meta->{type});
+	if (!defined $message_class) {
+		die "Cannot get Message for type '$message_meta->{type}'";
+	}
+	my $message = Loader->loadPlugin(ref($message_class));
 	my $remaining_buffer = $message->decode_message($buffer);
 	return $message;
 }
@@ -248,6 +262,9 @@ sub decode_data {
 	# decode using discovered message	
 	my $messages = $class->_load_messages();
 	my $message = Message->get_message_by_id($message_meta->{type});
+	if (!defined $message) {
+		die "Cannot get Message for type '$message_meta->{type}'";
+	}
 	my $remaing_buffer = $message->decode_message_data($buffer, $result);
 	return $result;
 }

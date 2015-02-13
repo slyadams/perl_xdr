@@ -3,6 +3,7 @@
 use lib '../lib/';
 use Utils::Time;
 
+use Message;
 use Message::Message1;
 use Message::Message2;
 use Message::Message3;
@@ -29,7 +30,6 @@ $m2->int64(0);
 $m1->uint16(123);
 $m1->uint32(123);
 $m1->uint64(0);
-
 my $start = Utils::Time->get_time_usec();
 
 for (my $i=0; $i<$n; $i++) {

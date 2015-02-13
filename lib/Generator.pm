@@ -17,7 +17,7 @@ sub generate {
 	my $namespace = shift;
 
 	if (! -f $idl_file) {
-		die "File '$idl_file' doesn't exist";
+		die "GeneratorError: File '$idl_file' doesn't exist";
 	}
 
 	my $parser = Generator::Parser->get_parser();
@@ -36,7 +36,6 @@ sub generate {
 	my $data = $parser->File($file) or die "Cannot parse";
 	chop($data->{package});
 	my $package_name = $data->{package};
-#	print Dumper($data);
 
 	# Produce enum file
 	my $enums = Generator::Parser->get_enums($data);
