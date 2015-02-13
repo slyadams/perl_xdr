@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib '../lib/';
+use lib '../../lib/';
 use Utils::Time;
 use Message;
 use Message::MessageB1;

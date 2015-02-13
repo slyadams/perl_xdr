@@ -127,7 +127,7 @@ sub _generate_inherited {
 	$inherited_line .= $self->_generate_field_line_end($field);
 
 	my $full_line = $self->_generate_field_line_start($field);
-	$full_line .= ", isa=>'header_int', default => $field->{value}";
+	$full_line .= ", isa=>'header_int', default => $field->{value}, traits => [\"DataType\"], data_type => Types::PRIMITIVE";
 	$full_line .= $self->_generate_field_line_end($field);
 
 	my $lines = "eval {\n";

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use lib '../lib/';
+use lib '../../lib/';
 use Utils::Time;
 
 use Message;
