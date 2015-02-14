@@ -6,111 +6,116 @@ use warnings;
 use lib '../lib/';
 use lib 'lib/';
 use Message;
-use Test::More;
-use Test::Deep;
 use Message::Object1;
 use Message::Object1_Child1;
 use Message::Object1_Child2;
+use Test::More;
+use Test::Deep;
 use Utils::Dumper;
 use Data::Dumper;
 
+my $index = 0;
 
-my $ref_data = {
-          'o1_obj_c2_h' => {
-                             '4' => {
-                                      'c2_uint16_1' => 8,
-                                      'c2_uint16_2' => 12
-                                    },
-                             '3' => {
-                                      'c2_uint16_1' => 6,
-                                      'c2_uint16_2' => 9
-                                    },
-                             '5' => {
-                                      'c2_uint16_1' => 10,
-                                      'c2_uint16_2' => 15
-                                    }
-                           },
-          'version' => 1,
-          'o1_obj_c1' => {
-                           'c1_uint16_1' => 2,
-                           'c1_obj_c2s' => [
-                                             {
-                                               'c2_uint16_1' => 103,
-                                               'c2_uint16_2' => 104
-                                             },
-                                             {
-                                               'c2_uint16_1' => 105,
-                                               'c2_uint16_2' => 106
-                                             }
-                                           ],
-                           'c1_obj_c2' => {
-                                            'c2_uint16_1' => 101,
-                                            'c2_uint16_2' => 102
-                                          }
-                         },
-          'type' => 1,
-          'o1_uint16_1' => 1,
-          'o1_uint16_2' => 3
-        };
+sub gen_bool {
+	my $integer = shift;
+	return $integer % 2;
+}
 
-my $o1 = new Message::Object1();
-my $c1_1 = new Message::Object1_Child1();
+sub gen_obj2 {
+	$index++;
+	return new Message::Object1_Child2(uint32 => $index, bool => gen_bool($index), string => $index);
+}
 
-$c1_1->c1_uint16_1(2);
-$c1_1->c1_obj_c2(new Message::Object1_Child2(c2_uint16_1 => 101, c2_uint16_2 => 102));
-$c1_1->c1_obj_c2s([new Message::Object1_Child2(c2_uint16_1 => 103, c2_uint16_2 => 104),new Message::Object1_Child2(c2_uint16_1 => 105, c2_uint16_2 => 106)]);
+sub gen_obj1 {
+	$index++;
+	my $o = new Message::Object1_Child1(uint32 => $index, string => $index);
+	$o->obj2(gen_obj2());
+	return $o;
+}
 
-$o1->o1_uint16_1(1);
-$o1->o1_obj_c1($c1_1);
-$o1->o1_obj_c2_h({	3 => new Message::Object1_Child2(c2_uint16_1 => 6, c2_uint16_2 => 9),
-			4 => new Message::Object1_Child2(c2_uint16_1 => 8, c2_uint16_2 => 12),
-			5 => new Message::Object1_Child2(c2_uint16_1 => 10, c2_uint16_2 => 15),
-		});
-$o1->o1_uint16_2(3);
+sub check_obj2 {
+	my $o = shift;
+	$index++;
+	is ($o->uint32(), $index, "check o2.uint32 $index");
+	is ($o->bool(), gen_bool($index), "check o2.bool $index");
+	is ($o->string(), $index, "check o2.string $index");
+}
 
-my $buffer1 = $o1->encode();
+sub check_obj1 {
+	my $o = shift;
+	$index++;
+	is ($o->uint32(), $index, "check o1.uint32 $index");
+	is ($o->string(), $index, "check o1.string $index");
+	check_obj2($o->obj2);
+}
 
-my $message_o1 = Message->decode($buffer1);
-isa_ok ($o1, 'Message::Object1', "o1 class type");
-is ($message_o1->o1_uint16_1, 1, "o1.ol_uint16_1");
-is ($message_o1->o1_uint16_2, 3, "o1.ol_uint16_2");
+####### Generate data
+my $o = new Message::Object1(uint32 => ++$index);
+$o->obj1(gen_obj1());
+$o->obj2(gen_obj2());
 
-my $message_o1_c1 = $o1->o1_obj_c1();
-isa_ok ($message_o1_c1, 'Message::Object1_Child1', "o1.o1_obj_c1 type");
-is ($message_o1_c1->c1_uint16_1(), 2, "o1.o1_obj_cl.c1_uint16");
-my $message_o1_c2 = $message_o1_c1->c1_obj_c2();
-isa_ok ($message_o1_c2, 'Message::Object1_Child2', "o1.o1_obj_c1.c1_obj_c2 type");
-is ($message_o1_c2->c2_uint16_1, 101, "o1.o1_obj_c1.c1_uint16_1");
-is ($message_o1_c2->c2_uint16_2, 102, "o1.o1_obj_c1.c1_uint16_2");
+my @o1_a = ();
+for (my $i=0; $i<30; $i++) {
+	push(@o1_a, gen_obj1());
+}
+$o->obj1_a(\@o1_a);
 
+my %o1_h = ();
+for (my $i=0; $i<40; $i++) {
+	my $o1 = gen_obj1();
+	$o1_h{$o1->uint32()} = $o1;
+}
+$o->obj1_h(\%o1_h);
 
+my @o2_a = ();
+for (my $i=0; $i<50; $i++) {
+	push(@o2_a, gen_obj2());
+}
+$o->obj2_a(\@o2_a);
 
-my $message_o1_c2s = $message_o1_c1->c1_obj_c2s();
-isa_ok ($message_o1_c2s, 'ARRAY', "o1.o1_obj_c1.c1_obj_c2s type");
-is (scalar @{$message_o1_c2s}, 2, "o1.o1_obj_c1.c1_obj_c2s length");
+my %o2_h = ();
+for (my $i=0; $i<60; $i++) {
+	my $o2 = gen_obj2();
+	$o2_h{$o2->uint32()} = $o2;
+}
+$o->obj2_h(\%o2_h);
 
-for (my $i=0; $i<2; $i++) {
-	my $message_c2 = $message_o1_c2s->[$i];
-	isa_ok ($message_c2, 'Message::Object1_Child2', "o1.o1_obj_c1.c1_obj_c2s[$i] type");
-	is ($message_c2->c2_uint16_1, 103+(2*$i), "o1.o1_obj_c1.c1_obj_c2s[$i].c1_uint16_1");
-	is ($message_c2->c2_uint16_2, 104+(2*$i), "o1.o1_obj_c1.c1_obj_c2s[$i].c1_uint16_2");
+my $buffer = $o->encode();
+my $m = Message->decode($buffer);
+
+####### Test
+$index = 0;
+
+isa_ok( $m, "Message::Object1", '$m class correct');
+is( $m->uint32(), ++$index, '$m->uint32() correct');
+check_obj1($m->obj1());
+check_obj2($m->obj2());
+
+my $o1_a = $m->obj1_a();
+is( scalar @{$o1_a}, 30, 'length $m->o1_a');
+foreach my $o1 (@{$o1_a}) {
+	check_obj1($o1);
 }
 
 
-my $message_o1_c2h = $message_o1->o1_obj_c2_h();
-isa_ok ($message_o1_c2h, 'HASH', "o1.o1_obj_c2_h type");
-is (scalar keys %{$message_o1_c2h}, 3, "o1.o1_obj_c2_h length");
-
-for (my $key=3; $key <= 5; $key++) {
-	my $message_c2 = $message_o1_c2h->{$key};
-	isa_ok ($message_c2, 'Message::Object1_Child2', "o1.o1_obj_c2_h->{$key} type");
-	is ($message_c2->c2_uint16_1, $key*2, "o1.o1_obj_c2_h->{$key}.cl_uint16_1");
-	is ($message_c2->c2_uint16_2, $key*3, "o1.o1_obj_c2_h->{$key}.cl_uint16_2");
-	
+my $o1_h = $m->obj1_h();
+is( scalar keys %{$o1_h}, 40, 'length $m->o1_h');
+foreach my $key (sort {$a <=> $b} keys %{$o1_h}) {
+	check_obj1($o1_h->{$key});
 }
 
-is_deeply($ref_data, $message_o1->data(), 'message data equality type 1');
-is_deeply($ref_data, Utils::Dumper->data($message_o1), 'message data equality type 2');
-is_deeply(Utils::Dumper->data($message_o1), $message_o1->data(), 'message data equality type 3');
+my $o2_a = $m->obj2_a();
+is( scalar @{$o2_a}, 50, 'length $m->o2_a');
+foreach my $o2 (@{$o2_a}) {
+	check_obj2($o2);
+}
+
+my $o2_h = $m->obj2_h();
+is( scalar keys %{$o2_h}, 60, 'length $m->o2_h');
+foreach my $key (sort {$a <=> $b} keys %{$o2_h}) {
+	check_obj2($o2_h->{$key});
+}
+
+is_deeply($m->data(), Message->decode_data($buffer), 'message data equality');
 
 done_testing();

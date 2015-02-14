@@ -42,15 +42,12 @@ sub get_template {
 sub get_default {
 	my $self = shift;
 	my $type = shift;
-
-
 	return Types::Primitives->defaults->{$type};
 }
 
 sub can {
 	my $class = shift;
 	my $type = shift;
-
 	return defined $class->get_template($type);
 }
 

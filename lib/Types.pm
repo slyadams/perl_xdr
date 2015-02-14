@@ -59,50 +59,32 @@ sub decode {
 	my $message = shift;
 	my $buffer = shift;
 	my $result = shift;
-	my $type = $attr->{isa};
 
 	my $attr_type = $attr->data_type();
 
 	if ($attr_type == PRIMITIVE) {
+		my $type = $attr->{isa};
 		my ($value, $new_buffer) = Types::Primitives->decode($type, $buffer);
-		if ($result) {
-			$result->{$attr->name()} = $value;
-		} else {
-			$attr->set_value($message, $value);
-		}
+		$result->{$attr->name()} = $value;
 		return ($value, $new_buffer);
 	} else {
 		my $constraint = $attr->type_constraint();
 		if ($attr_type == ARRAY) {
 			my ($value, $new_buffer) = Types::Array->decode($constraint->type_parameter()->name, $buffer, defined $result);
-			if ($result) {
-				$result->{$attr->name()} = $value;
-			} else {
-				$attr->set_value($message, $value);
-			}
+			$result->{$attr->name()} = $value;
 			return ($value, $new_buffer);
 		} elsif ($attr_type == MAP) {
 			my $key_types = $attr->key_types();
 			my ($value, $new_buffer) = Types::Map->decode($key_types->[0], $key_types->[1], $buffer, defined $result);
-			if ($result) {
-				$result->{$attr->name()} = $value;
-			} else {
-				$attr->set_value($message, $value);
-			}
+			$result->{$attr->name()} = $value;
 			return ($value, $new_buffer);
 		} elsif ($attr_type == OBJECT) {
-			if ($result) {
-				my $obj = Message->get_message_by_name($type);
-				my $sub_result = {};
-				my $new_buffer = $obj->decode_message_data($buffer, $sub_result);
-				$result->{$attr->name()} = $sub_result;
-				return ($sub_result, $new_buffer);
-			} else {
-				my $obj = Loader->loadPlugin($type);
-				my $new_buffer = $obj->decode_message($buffer);
-				$attr->set_value($message, $obj);
-				return ($obj, $new_buffer);
-			}
+			my $type = $attr->{isa};
+			my $obj = Message->get_message_by_name($type);
+			my $sub_result = {};
+			my $new_buffer = $obj->decode_message_data($buffer, $sub_result);
+			$result->{$attr->name()} = $sub_result;
+			return ($sub_result, $new_buffer);
 		} else {
 			die "DecodeError: Unknown type '".$constraint->parent()->name()."'";
 		}

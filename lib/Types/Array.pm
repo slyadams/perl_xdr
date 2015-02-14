@@ -50,16 +50,10 @@ sub decode {
 		my ($n, $new_buffer) = unpack("N a*", $buffer);
 		my @array = ();
 		for (my $i=0; $i<$n; $i++) {
-			if ($fast) {
-				my $obj = Message->get_message_by_name($type);
-				my $sub_result = {};
-				$new_buffer = $obj->decode_message_data($new_buffer, $sub_result);
-				push(@array, $sub_result);
-			} else {
-				my $obj = Loader->loadPlugin($type);
-				$new_buffer = $obj->decode_message($new_buffer);
-				push(@array, $obj);
-			} 
+			my $obj = Message->get_message_by_name($type);
+			my $sub_result = {};
+			$new_buffer = $obj->decode_message_data($new_buffer, $sub_result);
+			push(@array, $sub_result);
 		}
 		return (\@array, $new_buffer);
 	}

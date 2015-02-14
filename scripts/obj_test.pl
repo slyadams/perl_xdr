@@ -34,7 +34,4 @@ my $ma1 = Message->decode($buffer1);
 print "Message:\n".Utils::Dumper->message($ma1)."\n";
 
 $Data::Dumper::Deepcopy = 1;
-print "Message fast\n".Dumper(Message->decode_data($buffer1));
-
-my $a = $b1->b_obj_sa1()->sa1_obj_sa2s();
-print Dumper($a);
+print "Message fast decoded\n".Dumper(Message->decode_data($buffer1));

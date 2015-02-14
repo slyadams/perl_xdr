@@ -10,6 +10,22 @@ use Generator::Code::Enum;
 use Generator::Code::Object;
 use Data::Dumper;
 
+sub _write_files {
+	my $class = shift;
+	my $dir = shift;
+	my $files = shift;
+
+	# Write files
+	my $success = 1;
+	foreach my $file_name (keys %{$files}) {
+		my $full_file_name = Generator::File->generate_file_name($dir, $file_name);
+		my $result = Generator::File->write_file($full_file_name, $files->{$file_name});
+		print sprintf("Creating %-50s: %s\n", $full_file_name, ($result == 1 ? "success" : "fail"));
+		$success = $success && $result;
+	}
+	return $success;
+}
+
 sub generate {
 	my $class = shift;
 	my $idl_file = shift;
@@ -60,16 +76,7 @@ sub generate {
 		}
 	}
 
-	# Write files
-	my $success = 1;
-	foreach my $file_name (keys %{$output_files}) {
-		my $full_file_name = Generator::File->generate_file_name($output_dir, $file_name);
-		my $result = Generator::File->write_file($full_file_name, $output_files->{$file_name});
-		print sprintf("Creating %-50s: %s\n", $full_file_name, ($result == 1 ? "success" : "fail"));
-		$success = $success && $result;
-	
-	}
-	return $success;
+	return $class->_write_files($output_dir, $output_files);
 }
 
 1;

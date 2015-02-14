@@ -72,7 +72,6 @@ sub _build_ordered_attributes {
 sub _get_ordered_attributes {
 	my $self = shift;
 	my $ref = ref($self) || $self;
-
 	if (!defined $ordered_attributes->{$ref}) {
 		$ordered_attributes->{$ref} = $self->_build_ordered_attributes();
 	}
@@ -208,6 +207,17 @@ sub data {
 	return $result;
 }
 
+sub decode {
+	my $class = shift;
+	my $buffer = shift;
+	my $result = $class->decode_data($buffer);
+
+	# decode using discovered message	
+	my $messages = $class->_load_messages();
+	my $message_class = Message->get_message_by_id($result->{type});
+	return $message_class->from_data($result);
+}
+
 sub decode_message_data {
 	my $self = shift;
 	my $buffer = shift;
@@ -219,36 +229,6 @@ sub decode_message_data {
 		($value, $buffer) = Types->decode($attr, $self, $buffer, $result);
 	}
 	return $buffer;
-}
-
-sub decode_message {
-	my $self = shift;
-	my $buffer = shift;
-	
-	# decode entire message with appropriate type
-	foreach my $attr (@{$self->_get_ordered_attributes()}) {
-		my $value;
-		($value, $buffer) = Types->decode($attr, $self, $buffer);
-	}
-	return $buffer;
-}
-
-sub decode {
-	my $class = shift;
-	my $buffer = shift;
-
-	# decode first two fields to get type to decode with
-	my $message_meta = $class->_get_message_meta($buffer);
-
-	# decode using discovered message	
-	my $messages = $class->_load_messages();
-	my $message_class = Message->get_message_by_id($message_meta->{type});
-	if (!defined $message_class) {
-		die "Cannot get Message for type '$message_meta->{type}'";
-	}
-	my $message = Loader->loadPlugin(ref($message_class));
-	my $remaining_buffer = $message->decode_message($buffer);
-	return $message;
 }
 
 sub decode_data {
@@ -265,7 +245,7 @@ sub decode_data {
 	if (!defined $message) {
 		die "Cannot get Message for type '$message_meta->{type}'";
 	}
-	my $remaing_buffer = $message->decode_message_data($buffer, $result);
+	my $remaining_buffer = $message->decode_message_data($buffer, $result);
 	return $result;
 }
 

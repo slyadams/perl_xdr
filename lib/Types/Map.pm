@@ -64,17 +64,10 @@ sub decode {
 		my $template = Types::Primitives->templates->{$key_type}." a*";
 		for (my $i=0; $i<$n; $i++) {
 			($key, $new_buffer) = unpack($template, $new_buffer);
-			my $obj;
-			if ($fast) {
-				$obj = Message->get_message_by_name($value_type);
-				my $sub_result = {};
-				$new_buffer = $obj->decode_message_data($new_buffer, $sub_result);
-				$hash->{$key} = $sub_result;
-			} else {
-				$obj = Loader->loadPlugin($value_type);
-				$new_buffer = $obj->decode_message($new_buffer);
-				$hash->{$key} = $obj;
-			}
+			my $obj = Message->get_message_by_name($value_type);
+			my $sub_result = {};
+			$new_buffer = $obj->decode_message_data($new_buffer, $sub_result);
+			$hash->{$key} = $sub_result;
 		}
 		return ($hash, $new_buffer);
 	}
