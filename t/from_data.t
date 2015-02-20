@@ -5,7 +5,7 @@ use warnings;
 
 use lib '../lib/';
 use lib 'lib/';
-use Test::More;
+use Test::More tests => 44;
 use Test::Deep;
 use Message;
 use Message::FromData;
@@ -118,5 +118,3 @@ is_deeply ($m->obj_hash()->{6}->prim_hash(), { 16 => 26, 36 => 46}, "m->obj_hash
 is_deeply($ref_data, $m->data(), 'message data equality type 1');
 is_deeply($ref_data, Utils::Dumper->data($m), 'message data equality type 2');
 is_deeply(Utils::Dumper->data($m), $m->data(), 'message data equality type 3');
-
-done_testing();

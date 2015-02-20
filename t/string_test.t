@@ -6,7 +6,7 @@ use warnings;
 use lib '../lib/';
 use lib 'lib/';
 use Message;
-use Test::More;
+use Test::More tests => 7;
 use Test::Deep;
 use Message::Strings;
 use Utils::Dumper;

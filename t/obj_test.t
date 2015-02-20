@@ -9,7 +9,7 @@ use Message;
 use Message::Object1;
 use Message::Object1_Child1;
 use Message::Object1_Child2;
-use Test::More;
+use Test::More tests => 695;
 use Test::Deep;
 use Utils::Dumper;
 use Data::Dumper;
@@ -117,5 +117,3 @@ foreach my $key (sort {$a <=> $b} keys %{$o2_h}) {
 }
 
 is_deeply($m->data(), Message->decode_data($buffer), 'message data equality');
-
-done_testing();

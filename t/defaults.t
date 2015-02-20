@@ -7,7 +7,7 @@ use lib '../lib/';
 use lib 'lib/';
 use Message;
 use Message::Defaults;
-use Test::More;
+use Test::More tests => 10;
 use Utils::Dumper;
 use Data::Dumper;
 
@@ -25,5 +25,3 @@ is ($ma->float(), 0, 'float default');
 is ($ma->double(), 0, 'double default');
 is ($ma->bool(), 0, 'bool default');
 is ($ma->string(), "", 'string default');
-
-done_testing();

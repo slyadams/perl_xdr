@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use lib '../lib/';
 use lib 'lib/';
-use Test::More;
+use Test::More tests => 150;
 use Test::Deep;
 use Types::Array;
 use Data::Dumper;
@@ -42,5 +42,3 @@ for (my $i=0; $i<$n; $i++) {
 		}
 	}
 }
-
-done_testing();
