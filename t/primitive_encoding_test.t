@@ -21,7 +21,7 @@ is (encode_decode("int32",  23123), 23123,   "int32 encoding");
 is (encode_decode("int32", -20991), -20991,  "int32 negative encoding");
 is (encode_decode("uint32", 839119), 839119, "uint32 encoding");
 is (encode_decode("int64",  7704204641049602715), 7704204641049602715,  "int64 encoding");
-is (encode_decode("int64", -118688959023644671), -118688959023644671, "negative int64 encoding");
+is (encode_decode("int64", -118688959023644671), -118688959023644671, "int64 negative encoding");
 is (encode_decode("uint64", 7704204641049602715),  7704204641049602715,   "uint64 encoding");
 is (encode_decode("bool", 1), 1, "bool true encoding");
 is (encode_decode("bool", 0), 0, "bool false encoding");
