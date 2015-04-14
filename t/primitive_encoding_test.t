@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use lib '../lib/';
 use lib 'lib/';
-use Test::More tests => 12;
+use Test::More tests => 15;
 use Test::Deep;
 use Types::Primitives;
 
@@ -20,9 +20,9 @@ is (encode_decode("uint16", 119), 119,  "uint16 encoding");
 is (encode_decode("int32",  23123), 23123,   "int32 encoding");
 is (encode_decode("int32", -20991), -20991,  "int32 negative encoding");
 is (encode_decode("uint32", 839119), 839119, "uint32 encoding");
-#is (encode_decode("int64",  1230491407), 1230491407,  "int64 encoding");
-#is (encode_decode("int64", -2133492397), -2133492397, "uint64 encoding");
-#is (encode_decode("uint64", 213431591),  213431591,   "uint64 negative encoding");
+is (encode_decode("int64",  7704204641049602715), 7704204641049602715,  "int64 encoding");
+is (encode_decode("int64", -118688959023644671), -118688959023644671, "negative int64 encoding");
+is (encode_decode("uint64", 7704204641049602715),  7704204641049602715,   "uint64 negative encoding");
 is (encode_decode("bool", 1), 1, "bool true encoding");
 is (encode_decode("bool", 0), 0, "bool false encoding");
 
