@@ -10,7 +10,6 @@ my $file = $ARGV[0];
 my $n = $ARGV[1] // 1000;
 my $mode = $ARGV[2] // 1;
 
-Message->_init();
 print "Decoding $file\n";
 my $file_content = File::Slurp::read_file($file);
 $file_content =~ s/\s*//ig;

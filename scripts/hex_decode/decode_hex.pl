@@ -19,8 +19,6 @@ foreach my $file (sort <$directory/*.hex>) {
 		($length, $buffer) = unpack("N a*", $buffer);
 	}
 	eval {
-		#my $m = Message->decode($buffer);
-		#print Utils::Dumper->message($m);
 		my $m = Message->decode_data($buffer);
 		print Dumper($m);
 	};

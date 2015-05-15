@@ -17,8 +17,6 @@ my $n=$ARGV[0] // 10000;
 my $b1 = new Message::MessageB1();
 my $sa1 = new Message::Standalone1();
 my $sa2 = new Message::Standalone2();
-$b1->_init();
-
 
 $b1->b_uint16_1(1);
 $b1->b_uint16_2(3);

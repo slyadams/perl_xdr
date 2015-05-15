@@ -87,7 +87,7 @@ sub _load_messages {
 	return $messages;
 }
 
-sub _init {
+sub init {
 	my $self = shift;
 	if (!$inited) {
 		$inited = 1;
@@ -96,9 +96,8 @@ sub _init {
 	}
 }
 
-sub BUILD {
-	my $self = shift;
-	$self->_init();
+INIT {
+	Message->init();
 }
 
 # End of class init() methods
@@ -210,11 +209,16 @@ sub data {
 sub decode {
 	my $class = shift;
 	my $buffer = shift;
+
 	my $result = $class->decode_data($buffer);
 
-	# decode using discovered message	
-	my $messages = $class->_load_messages();
-	my $message_class = Message->get_message_by_id($result->{type});
+	# Creste and return mesage of appropriate type
+	my $message_class;
+	if ($class ne __PACKAGE__) {
+		$message_class = Message->get_message_by_name($class);
+	} else {
+		$message_class = Message->get_message_by_id($result->{type});
+	}
 	return $message_class->from_data($result);
 }
 
@@ -236,14 +240,23 @@ sub decode_data {
 	my $buffer = shift;
 	my $result = {};
 
-	# decode first two fields to get type to decode with
-	my $message_meta = $class->_get_message_meta($buffer);
+	my $message;
+	if ($class ne __PACKAGE__) {
+		# Someone is decoding not from the base class so they are
+		# specifying exactly the class to use, so let's use it
+		$message =  Message->get_message_by_name($class);
+		if (!defined $message) {
+			die "Cannot get Message for class '$class'";
+		}
+	} else {
+		# decode first two fields to get type to decode with
+		my $message_meta = $class->_get_message_meta($buffer);
 
-	# decode using discovered message	
-	my $messages = $class->_load_messages();
-	my $message = Message->get_message_by_id($message_meta->{type});
-	if (!defined $message) {
-		die "Cannot get Message for type '$message_meta->{type}'";
+		# decode using discovered message	
+		$message = Message->get_message_by_id($message_meta->{type});
+		if (!defined $message) {
+			die "Cannot get Message for type '$message_meta->{type}'";
+		}
 	}
 	my $remaining_buffer = $message->decode_message_data($buffer, $result);
 	return $result;
