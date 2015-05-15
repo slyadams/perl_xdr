@@ -96,10 +96,6 @@ sub init {
 	}
 }
 
-INIT {
-	Message->init();
-}
-
 # End of class init() methods
 
 sub get_message_by_name {
@@ -129,6 +125,9 @@ sub from_data {
 	my $class = shift;
 	my $data = shift;
 	my $message;
+
+	$class->init();
+
 	foreach my $attr (@{$class->_get_ordered_attributes()}) {
 		my $attr_type = $attr->data_type();
 
@@ -210,6 +209,7 @@ sub decode {
 	my $class = shift;
 	my $buffer = shift;
 
+	$class->init();
 	my $result = $class->decode_data($buffer);
 
 	# Creste and return mesage of appropriate type
@@ -227,6 +227,8 @@ sub decode_message_data {
 	my $buffer = shift;
 	my $result = shift;
 
+	$self->init();
+
 	# decode entire message with appropriate type
 	foreach my $attr (@{$self->_get_ordered_attributes()}) {
 		my $value;
@@ -239,6 +241,8 @@ sub decode_data {
 	my $class = shift;
 	my $buffer = shift;
 	my $result = {};
+
+	$class->init();
 
 	my $message;
 	if ($class ne __PACKAGE__) {
